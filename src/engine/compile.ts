@@ -1,7 +1,13 @@
 import type { CompiledPrompt, PromptIR } from "../types.ts";
+import {
+  makeMaxTokens,
+  makeSystemPrompt,
+  makeTemperature,
+  makeUserPrompt,
+} from "../lib/branded.ts";
 
 export function compileIR(ir: PromptIR, rawPrompt: string): CompiledPrompt {
-  const system = [
+  const systemText = [
     `ROLE: ${ir.role}`,
     `OBJECTIVE: ${ir.objective}`,
     `CONSTRAINTS: ${ir.constraints.join("; ")}`,
@@ -9,7 +15,7 @@ export function compileIR(ir: PromptIR, rawPrompt: string): CompiledPrompt {
     `STEPS: ${ir.steps.join(" -> ")}`,
   ].join("\n");
 
-  const user = [
+  const userText = [
     "TASK:",
     rawPrompt,
     "",
@@ -18,5 +24,12 @@ export function compileIR(ir: PromptIR, rawPrompt: string): CompiledPrompt {
     "- citations: string[] (URLs or source identifiers; use [] or ['unknown'] if none).",
   ].join("\n");
 
-  return { system, user, decoding: { temperature: 0.2, maxTokens: 600 } };
+  return {
+    system: makeSystemPrompt(systemText),
+    user: makeUserPrompt(userText),
+    decoding: {
+      temperature: makeTemperature(0.2),
+      maxTokens: makeMaxTokens(600),
+    },
+  };
 }

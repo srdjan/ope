@@ -3,9 +3,10 @@ import { localHttp } from "../adapters/localHttp.ts";
 import { openaiStyle } from "../adapters/openaiStyle.ts";
 import type { Adapter } from "../adapters/types.ts";
 import type { AvailableCapabilities } from "../types.ts";
+import { makeModelId, type ModelId } from "../lib/branded.ts";
 
 export type RouteDecision = {
-  readonly model: string;
+  readonly model: ModelId;
   readonly adapter: Adapter;
 };
 
@@ -19,15 +20,15 @@ export function route(
 ): RouteDecision {
   if (targetHint === "local") {
     if (capabilities.hasLocalHttp) {
-      return { model: "local/http", adapter: localHttp };
+      return { model: makeModelId("local/http"), adapter: localHttp };
     }
-    return { model: "local/echo", adapter: localEcho };
+    return { model: makeModelId("local/echo"), adapter: localEcho };
   }
   if (capabilities.hasCloud) {
-    return { model: "cloud/openai-style", adapter: openaiStyle };
+    return { model: makeModelId("cloud/openai-style"), adapter: openaiStyle };
   }
   if (capabilities.hasLocalHttp) {
-    return { model: "local/http", adapter: localHttp };
+    return { model: makeModelId("local/http"), adapter: localHttp };
   }
-  return { model: "local/echo", adapter: localEcho };
+  return { model: makeModelId("local/echo"), adapter: localEcho };
 }

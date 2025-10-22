@@ -5,7 +5,7 @@ import type {
   GenerateResult,
 } from "./types.ts";
 import { err, ok, type Result } from "../lib/result.ts";
-import { CLOUD_API_KEY, CLOUD_BASE_URL } from "../config.ts";
+import { CLOUD_API_KEY, CLOUD_BASE_URL, CLOUD_MODEL } from "../config.ts";
 
 export const openaiStyle: Adapter = async (
   args: GenerateArgs,
@@ -19,7 +19,7 @@ export const openaiStyle: Adapter = async (
 
   const url = new URL("/v1/chat/completions", CLOUD_BASE_URL).toString();
   const payload = {
-    model: Deno.env.get("CLOUD_MODEL") ?? "gpt-4o-mini",
+    model: CLOUD_MODEL,
     messages: [
       { role: "system", content: args.system },
       { role: "user", content: args.user },

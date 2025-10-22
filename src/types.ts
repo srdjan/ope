@@ -1,5 +1,15 @@
+import type {
+  CitationUrl,
+  MaxTokens,
+  ModelId,
+  PromptText,
+  SystemPrompt,
+  Temperature,
+  UserPrompt,
+} from "./lib/branded.ts";
+
 export type GenerateRequest = {
-  readonly rawPrompt: string;
+  readonly rawPrompt: PromptText;
   readonly taskType?: "qa" | "extract" | "summarize";
   readonly targetHint?: "local" | "cloud";
 };
@@ -20,26 +30,34 @@ export type PromptIR = {
 };
 
 export type CompiledPrompt = {
-  readonly system: string;
-  readonly user: string;
+  readonly system: SystemPrompt;
+  readonly user: UserPrompt;
   readonly decoding: {
-    readonly temperature: number;
-    readonly maxTokens: number;
+    readonly temperature: Temperature;
+    readonly maxTokens: MaxTokens;
   };
 };
 
 export type FinalResponse = {
   readonly output: {
     readonly answer: string;
-    readonly citations: ReadonlyArray<string>;
+    readonly citations: ReadonlyArray<CitationUrl>;
   };
   readonly meta: {
-    readonly model: string;
+    readonly model: ModelId;
     readonly ir: PromptIR;
-    readonly compiled: { readonly system: string; readonly user: string };
+    readonly compiled: {
+      readonly system: SystemPrompt;
+      readonly user: UserPrompt;
+    };
     readonly decoding: {
-      readonly temperature: number;
-      readonly maxTokens: number;
+      readonly temperature: Temperature;
+      readonly maxTokens: MaxTokens;
+    };
+    readonly validation: {
+      readonly wasRepaired: boolean;
+      readonly errorKind: string | null;
+      readonly errorDetail: string | null;
     };
   };
 };
