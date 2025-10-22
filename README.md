@@ -275,6 +275,8 @@ enhancements:
 - ✅ Result types throughout adapters
 - ✅ Immutable data structures
 
+## Developers: Clody & Gipity
+
 ## License
 
 MIT
