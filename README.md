@@ -162,59 +162,19 @@ GenerateRequest → analyze → synthesize → compile → route → adapter →
 5. **adapter** - Calls the model and returns `Result<Text, AdapterError>`
 6. **validate** - Validates/repairs response, tracks any issues
 
-### Project Structure
-
-```
-src/
-  server.ts              # HTTP server entry point
-  routes/
-    generate.ts          # Main pipeline orchestration
-  engine/                # Pure transformation functions
-    analyze.ts           # Request analysis
-    synthesize.ts        # IR synthesis
-    compile.ts           # IR → prompts compilation
-    route.ts             # Adapter selection (pure function)
-    validate.ts          # Output validation with repair tracking
-  adapters/              # Model integrations (return Result types)
-    types.ts             # Adapter interface + error types
-    localEcho.ts         # Echo adapter (testing)
-    localHttp.ts         # Generic HTTP LLM adapter
-    openaiStyle.ts       # OpenAI-compatible adapter
-  lib/
-    result.ts            # Result<T, E> type utilities
-    branded.ts           # Branded types for domain primitives
-  ports/
-    config.ts            # ConfigPort interface + adapters
-  types.ts               # Core domain types
-  config.ts              # Config singleton (uses port pattern)
-scripts/
-  call.ts                # CLI client for testing
-test/
-  smoke.test.ts          # Integration tests
-```
-
-### Light FP Principles
-
-This codebase follows **Light Functional Programming** patterns:
-
-- **No classes or inheritance** - Only pure functions and type aliases
-- **Result types instead of exceptions** - `Result<T, E>` for error handling
-- **Immutable data** - All types use `readonly` modifiers
-- **Branded types** - Domain primitives prevent type confusion
-- **Port pattern** - Interfaces for capabilities (ConfigPort, Adapter)
-- **Pure functions** - Engine layer has no side effects
-- **Dependency injection** - Config and capabilities passed as parameters
-
 ## Development
 
 ### Running Tests
 
 ```bash
-# Run all tests
+# Run all tests (local unit and integration tests)
 deno test -A
 
-# Run with coverage
-deno task coverage  # (if configured)
+# Run remote smoke tests against deployed instance
+deno task test:remote
+
+# Test specific remote host
+OPE_HOST=https://your-ope-instance.com deno test --allow-net --allow-env test/remote.smoke.test.ts
 
 # Lint code
 deno lint
@@ -222,6 +182,42 @@ deno lint
 # Format code
 deno fmt
 ```
+
+### Remote Testing
+
+The project includes comprehensive smoke tests for validating deployed OPE instances:
+
+**Test Coverage** ([test/remote.smoke.test.ts](test/remote.smoke.test.ts)):
+- Health check endpoint validation
+- Basic generation request/response structure
+- All task types (qa, extract, summarize)
+- Target hint routing (local/cloud)
+- IR synthesis and compilation validation
+- Error handling (empty prompts, invalid JSON)
+- Performance checks (response time < 30s)
+- Concurrent request handling
+
+**Quick Start**:
+```bash
+# Test the default deployed instance
+deno task test:remote
+
+# Test a custom deployment
+OPE_HOST=https://your-instance.com deno task test:remote
+```
+
+**What Gets Tested**:
+- ✅ Health endpoint returns "ok"
+- ✅ /v1/generate accepts valid requests
+- ✅ Response structure matches schema (output, meta)
+- ✅ All task types (qa, extract, summarize) work correctly
+- ✅ IR synthesis produces role, objective, constraints, style
+- ✅ Compiled prompts contain system and user messages
+- ✅ Decoding parameters are present (temperature, maxTokens)
+- ✅ Citations structure is valid (array of strings)
+- ✅ Error handling for invalid inputs
+- ✅ Response times are reasonable
+- ✅ Concurrent requests are handled properly
 
 ### Adding a New Adapter
 
@@ -263,17 +259,6 @@ High repair rates indicate:
 - Model not following JSON schema
 - Prompt engineering needs improvement
 - Output validation too strict
-
-## Recent Improvements
-
-See [IMPROVEMENTS.md](IMPROVEMENTS.md) for detailed changelog of recent
-enhancements:
-
-- ✅ Branded types for type safety
-- ✅ Enhanced validation with repair tracking
-- ✅ Config port pattern for testability
-- ✅ Result types throughout adapters
-- ✅ Immutable data structures
 
 ## Developers: Clody & Gipity
 
