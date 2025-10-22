@@ -5,7 +5,7 @@ code in this repository.
 
 ## Project Overview
 
-**OPE MVP (Online Prompt Enhancer)** is a Deno-based prompt optimization system
+**OPE (Online Prompt Enhancer)** is a Deno-based prompt optimization system
 that implements a complete pipeline: analyze → synthesize → compile → route →
 generate → validate. The system is model-agnostic, supporting local echo/HTTP
 models and cloud OpenAI-compatible APIs.

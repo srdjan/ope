@@ -1,4 +1,4 @@
-# OPE MVP — Online Prompt Enhancer (Model-Agnostic, Deno)
+# OPE — Online Prompt Enhancer (Model-Agnostic, Deno)
 
 An end-to-end minimal implementation of the **Online Prompt Enhancer**: analyze
 → synthesize Prompt IR → compile → **route to local/cloud model** → generate →
