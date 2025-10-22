@@ -1,0 +1,15 @@
+{
+  "lock": false,
+  "tasks": {
+    "dev": "deno run --allow-net --allow-env src/server.ts",
+    "call": "deno run --allow-net --allow-env scripts/call.ts",
+    "gen:local": "deno task call '{"rawPrompt":"Explain Raft in ~150 words","taskType":"summarize","targetHint":"local"}'",
+    "gen:cloud": "deno task call '{"rawPrompt":"Extract company and role from: Jane Doe worked at ExampleCorp as Staff Engineer.","taskType":"extract"}'",
+    "test": "deno test -A"
+  },
+  "lint": {
+    "rules": {
+      "exclude": ["src/adapters/openaiStyle.ts"] 
+    }
+  }
+}
