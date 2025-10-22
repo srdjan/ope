@@ -12,7 +12,7 @@ const host = Deno.env.get("OPE_HOST") ?? "http://127.0.0.1:8787";
 const res = await fetch(`${host}/v1/generate`, {
   method: "POST",
   headers: { "content-type": "application/json" },
-  body: JSON.stringify(payload)
+  body: JSON.stringify(payload),
 });
 const text = await res.text();
 console.log(text);

@@ -1,7 +1,8 @@
 # OPE MVP — Online Prompt Enhancer (Model-Agnostic, Deno)
 
-An end-to-end minimal implementation of the **Online Prompt Enhancer**:
-analyze → synthesize Prompt IR → compile → **route to local/cloud model** → generate → validate JSON.
+An end-to-end minimal implementation of the **Online Prompt Enhancer**: analyze
+→ synthesize Prompt IR → compile → **route to local/cloud model** → generate →
+validate JSON.
 
 - Runtime: **Deno**
 - Style: **Light Functional TypeScript** (no classes)
@@ -19,7 +20,9 @@ deno task gen:local  # calls /v1/generate with a local demo body
 ```
 
 ### Optional: Local HTTP LLM
-Set an endpoint which accepts `POST { prompt: string }` and returns `{ text: string }`:
+
+Set an endpoint which accepts `POST { prompt: string }` and returns
+`{ text: string }`:
 
 ```bash
 export LLM_BASE_URL=http://127.0.0.1:11434/generate
@@ -27,6 +30,7 @@ deno task gen:local
 ```
 
 ### Optional: Cloud (OpenAI-compatible)
+
 Provide an API base and key:
 
 ```bash
@@ -40,11 +44,13 @@ deno task gen:cloud
 `POST /v1/generate`
 
 Request:
+
 ```json
 { "rawPrompt": "Explain Raft", "taskType": "summarize", "targetHint": "local" }
 ```
 
 Response:
+
 ```json
 {
   "output": { "answer": "string", "citations": ["..."] },
@@ -83,4 +89,5 @@ test/
 ```
 
 ## License
+
 MIT

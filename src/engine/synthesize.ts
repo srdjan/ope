@@ -1,7 +1,7 @@
 import type { PromptIR } from "../types.ts";
 import type { AnalysisReport } from "./analyze.ts";
 
-export function synthesize(rawPrompt: string, a: AnalysisReport): PromptIR {
+export function synthesize(_rawPrompt: string, a: AnalysisReport): PromptIR {
   const constraintWord = `${a.maxWords - 40}-${a.maxWords}-words`;
   const constraints = ["json-only", "cite-or-say-unknown", constraintWord];
   const style = ["succinct", "use table only if clearly useful"];
@@ -13,6 +13,6 @@ export function synthesize(rawPrompt: string, a: AnalysisReport): PromptIR {
     style,
     steps,
     outputSchema: { answer: "string", citations: "string[]" },
-    examples: []
+    examples: [],
   };
 }

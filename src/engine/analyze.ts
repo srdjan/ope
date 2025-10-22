@@ -1,9 +1,9 @@
 import type { GenerateRequest } from "../types.ts";
 
 export type AnalysisReport = {
-  needsJson: boolean;
-  needsCitations: boolean;
-  maxWords: number;
+  readonly needsJson: boolean;
+  readonly needsCitations: boolean;
+  readonly maxWords: number;
 };
 
 export function analyze(req: GenerateRequest): AnalysisReport {

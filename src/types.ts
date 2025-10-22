@@ -1,31 +1,51 @@
 export type GenerateRequest = {
-  rawPrompt: string;
-  taskType?: "qa" | "extract" | "summarize";
-  targetHint?: "local" | "cloud";
+  readonly rawPrompt: string;
+  readonly taskType?: "qa" | "extract" | "summarize";
+  readonly targetHint?: "local" | "cloud";
 };
 
 export type PromptIR = {
-  role: string;
-  objective: string;
-  constraints: string[];
-  style: string[];
-  steps: string[];
-  outputSchema: { answer: "string"; citations: "string[]" };
-  examples: Array<{ user: string; assistant: string }>;
+  readonly role: string;
+  readonly objective: string;
+  readonly constraints: ReadonlyArray<string>;
+  readonly style: ReadonlyArray<string>;
+  readonly steps: ReadonlyArray<string>;
+  readonly outputSchema: {
+    readonly answer: "string";
+    readonly citations: "string[]";
+  };
+  readonly examples: ReadonlyArray<
+    { readonly user: string; readonly assistant: string }
+  >;
 };
 
 export type CompiledPrompt = {
-  system: string;
-  user: string;
-  decoding: { temperature: number; maxTokens: number };
+  readonly system: string;
+  readonly user: string;
+  readonly decoding: {
+    readonly temperature: number;
+    readonly maxTokens: number;
+  };
 };
 
 export type FinalResponse = {
-  output: { answer: string; citations: string[] };
-  meta: {
-    model: string;
-    ir: PromptIR;
-    compiled: { system: string; user: string };
-    decoding: { temperature: number; maxTokens: number };
+  readonly output: {
+    readonly answer: string;
+    readonly citations: ReadonlyArray<string>;
   };
+  readonly meta: {
+    readonly model: string;
+    readonly ir: PromptIR;
+    readonly compiled: { readonly system: string; readonly user: string };
+    readonly decoding: {
+      readonly temperature: number;
+      readonly maxTokens: number;
+    };
+  };
+};
+
+// Configuration capabilities for dependency injection
+export type AvailableCapabilities = {
+  readonly hasCloud: boolean;
+  readonly hasLocalHttp: boolean;
 };

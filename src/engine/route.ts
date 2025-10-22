@@ -1,17 +1,33 @@
-import { hasCloud, hasLocalHttp } from "../config.ts";
 import { localEcho } from "../adapters/localEcho.ts";
 import { localHttp } from "../adapters/localHttp.ts";
 import { openaiStyle } from "../adapters/openaiStyle.ts";
 import type { Adapter } from "../adapters/types.ts";
+import type { AvailableCapabilities } from "../types.ts";
 
-export type RouteDecision = { model: string; adapter: Adapter };
+export type RouteDecision = {
+  readonly model: string;
+  readonly adapter: Adapter;
+};
 
-export function route(targetHint?: "local" | "cloud"): RouteDecision {
+/**
+ * Pure function to select appropriate adapter based on capabilities and target hint.
+ * No side effects - config is passed as parameter for dependency injection.
+ */
+export function route(
+  capabilities: AvailableCapabilities,
+  targetHint?: "local" | "cloud",
+): RouteDecision {
   if (targetHint === "local") {
-    if (hasLocalHttp()) return { model: "local/http", adapter: localHttp };
+    if (capabilities.hasLocalHttp) {
+      return { model: "local/http", adapter: localHttp };
+    }
     return { model: "local/echo", adapter: localEcho };
   }
-  if (hasCloud()) return { model: "cloud/openai-style", adapter: openaiStyle };
-  if (hasLocalHttp()) return { model: "local/http", adapter: localHttp };
+  if (capabilities.hasCloud) {
+    return { model: "cloud/openai-style", adapter: openaiStyle };
+  }
+  if (capabilities.hasLocalHttp) {
+    return { model: "local/http", adapter: localHttp };
+  }
   return { model: "local/echo", adapter: localEcho };
 }
