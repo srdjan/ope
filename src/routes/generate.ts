@@ -72,7 +72,11 @@ export async function handleGenerate(
 
   const { text } = adapterResult.value;
   const validationResult = validateOrRepair(text);
-  const validationMetrics = getValidationMetrics(validationResult);
+  const validationMetrics: {
+    readonly wasRepaired: boolean;
+    readonly errorKind: string | null;
+    readonly errorDetail: string | null;
+  } = getValidationMetrics(validationResult);
 
   const result: FinalResponse = {
     output: validationResult.value,
