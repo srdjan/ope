@@ -78,6 +78,14 @@ async function callGenerate(payload: {
     duration: `${duration}ms`,
   });
 
+  // Log enhanced prompts (compiled system and user prompts)
+  if (result.meta?.compiled) {
+    logTest(`[${testName || "TEST"}] Enhanced prompts (OPE output)`, {
+      system: result.meta.compiled.system,
+      user: result.meta.compiled.user,
+    });
+  }
+
   // Log full response for detailed debugging (can be verbose)
   if (Deno.env.get("VERBOSE") === "true") {
     logTest(`[${testName || "TEST"}] Full response`, result);
