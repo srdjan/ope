@@ -38,12 +38,28 @@ const handler = async (req: Request): Promise<Response> => {
 
         response = await handleGenerate(body, requestId);
       } catch (err) {
-        logger.error("Failed to parse request body or generate response", err);
-        const msg = err instanceof Error ? err.message : String(err);
-        response = new Response(JSON.stringify({ error: msg }), {
-          status: 500,
-          headers: { "content-type": "application/json" },
-        });
+        // Check if this is a JSON parse error
+        if (err instanceof SyntaxError && err.message.includes("JSON")) {
+          logger.error("Invalid JSON in request body", err);
+          response = new Response(
+            JSON.stringify({
+              error: "Invalid JSON in request body",
+              detail: err.message,
+            }),
+            {
+              status: 400,
+              headers: { "content-type": "application/json" },
+            }
+          );
+        } else {
+          // Other errors (e.g., from handleGenerate)
+          logger.error("Failed to generate response", err);
+          const msg = err instanceof Error ? err.message : String(err);
+          response = new Response(JSON.stringify({ error: msg }), {
+            status: 500,
+            headers: { "content-type": "application/json" },
+          });
+        }
       }
     } else if (method === "GET" && path === "/health") {
       response = new Response("ok");
