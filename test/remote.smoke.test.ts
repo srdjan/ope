@@ -12,39 +12,98 @@ import { assertEquals, assertExists } from "jsr:@std/assert";
 const OPE_HOST = Deno.env.get("OPE_HOST") || "https://ope.timok.deno.net";
 
 /**
- * Helper to call the /v1/generate endpoint
+ * Format timestamp for logging
+ */
+function timestamp(): string {
+  return new Date().toISOString();
+}
+
+/**
+ * Log test information with timestamp
+ */
+function logTest(message: string, data?: unknown): void {
+  console.log(`\n[${timestamp()}] ${message}`);
+  if (data !== undefined) {
+    console.log(JSON.stringify(data, null, 2));
+  }
+}
+
+/**
+ * Helper to call the /v1/generate endpoint with detailed logging
  */
 async function callGenerate(payload: {
   rawPrompt: string;
   taskType?: "qa" | "extract" | "summarize";
   targetHint?: "local" | "cloud";
-}) {
+}, testName?: string) {
+  const startTime = performance.now();
+
+  logTest(`[${testName || "TEST"}] Request starting`, {
+    host: OPE_HOST,
+    payload,
+  });
+
   const response = await fetch(`${OPE_HOST}/v1/generate`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
 
+  const duration = Math.round(performance.now() - startTime);
+
+  logTest(`[${testName || "TEST"}] Response received`, {
+    status: response.status,
+    statusText: response.statusText,
+    duration: `${duration}ms`,
+    headers: {
+      "content-type": response.headers.get("content-type"),
+      "x-request-id": response.headers.get("x-request-id"),
+    },
+  });
+
   if (!response.ok) {
     const text = await response.text();
+    logTest(`[${testName || "TEST"}] Error response body`, text);
     throw new Error(`HTTP ${response.status}: ${text}`);
   }
 
-  return await response.json();
+  const result = await response.json();
+
+  logTest(`[${testName || "TEST"}] Response body summary`, {
+    outputAnswerLength: result.output?.answer?.length,
+    citationsCount: result.output?.citations?.length,
+    model: result.meta?.model,
+    wasRepaired: result.meta?.validation?.wasRepaired,
+    duration: `${duration}ms`,
+  });
+
+  // Log full response for detailed debugging (can be verbose)
+  if (Deno.env.get("VERBOSE") === "true") {
+    logTest(`[${testName || "TEST"}] Full response`, result);
+  }
+
+  return result;
 }
 
 Deno.test("Remote OPE - Health check", async () => {
+  logTest("Health check starting", { host: OPE_HOST });
   const response = await fetch(`${OPE_HOST}/health`);
+  logTest("Health check response", {
+    status: response.status,
+    statusText: response.statusText,
+  });
+
   assertEquals(response.status, 200);
 
   const text = await response.text();
   assertEquals(text, "ok");
+  logTest("Health check passed");
 });
 
 Deno.test("Remote OPE - Basic generation request", async () => {
   const result = await callGenerate({
     rawPrompt: "What is the capital of France?",
-  });
+  }, "BasicGeneration");
 
   // Validate response structure
   assertExists(result.output);
@@ -66,7 +125,7 @@ Deno.test("Remote OPE - QA task type", async () => {
   const result = await callGenerate({
     rawPrompt: "Explain how photosynthesis works",
     taskType: "qa",
-  });
+  }, "QATask");
 
   assertExists(result.output.answer);
   assertEquals(typeof result.output.answer, "string");
@@ -83,7 +142,7 @@ Deno.test("Remote OPE - Extract task type", async () => {
   const result = await callGenerate({
     rawPrompt: "Extract key facts from: The Eiffel Tower is 330 meters tall and was completed in 1889.",
     taskType: "extract",
-  });
+  }, "ExtractTask");
 
   assertExists(result.output.answer);
   assertEquals(typeof result.output.answer, "string");
@@ -97,7 +156,7 @@ Deno.test("Remote OPE - Summarize task type", async () => {
   const result = await callGenerate({
     rawPrompt: "Summarize the main principles of object-oriented programming",
     taskType: "summarize",
-  });
+  }, "SummarizeTask");
 
   assertExists(result.output.answer);
   assertEquals(typeof result.output.answer, "string");
@@ -111,7 +170,7 @@ Deno.test("Remote OPE - Target hint: local", async () => {
   const result = await callGenerate({
     rawPrompt: "What is 2+2?",
     targetHint: "local",
-  });
+  }, "LocalTarget");
 
   assertExists(result.meta.model);
   // Model should indicate local routing (echo or http)
@@ -126,7 +185,7 @@ Deno.test("Remote OPE - Complex prompt with multiple requirements", async () => 
   const result = await callGenerate({
     rawPrompt: "Explain the CAP theorem in distributed systems, including examples of consistency vs availability tradeoffs",
     taskType: "qa",
-  });
+  }, "ComplexPrompt");
 
   assertExists(result.output.answer);
   assertEquals(result.output.answer.length > 100, true, "Complex query should produce detailed answer");
@@ -189,18 +248,23 @@ Deno.test("Remote OPE - Compiled prompt structure", async () => {
 });
 
 Deno.test("Remote OPE - Error handling: empty prompt", async () => {
+  logTest("Testing empty prompt error handling");
   try {
     await callGenerate({
       rawPrompt: "",
-    });
+    }, "EmptyPromptError");
     throw new Error("Should have thrown an error for empty prompt");
   } catch (error) {
     // Expected to fail - validate we get a proper error response
+    logTest("Empty prompt correctly rejected", {
+      errorMessage: error instanceof Error ? error.message : String(error),
+    });
     assertExists(error);
   }
 });
 
 Deno.test("Remote OPE - Error handling: invalid JSON", async () => {
+  logTest("Testing invalid JSON error handling");
   try {
     const response = await fetch(`${OPE_HOST}/v1/generate`, {
       method: "POST",
@@ -208,14 +272,22 @@ Deno.test("Remote OPE - Error handling: invalid JSON", async () => {
       body: "not valid json",
     });
 
-    // Consume the response body to prevent resource leaks
-    await response.text();
+    const body = await response.text();
+
+    logTest("Invalid JSON response", {
+      status: response.status,
+      statusText: response.statusText,
+      body: body.slice(0, 200),
+    });
 
     // Should get 400 or 500 error
     assertEquals(response.ok, false);
     assertEquals(response.status >= 400, true);
   } catch (error) {
     // Network error is also acceptable
+    logTest("Invalid JSON handling (network error)", {
+      errorMessage: error instanceof Error ? error.message : String(error),
+    });
     assertExists(error);
   }
 });

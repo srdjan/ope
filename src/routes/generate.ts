@@ -6,16 +6,21 @@ import { route } from "../engine/route.ts";
 import { getValidationMetrics, validateOrRepair } from "../engine/validate.ts";
 import { hasCloud, hasLocalHttp } from "../config.ts";
 import { makePromptText } from "../lib/branded.ts";
+import { createRequestLogger, logStage } from "../lib/logger.ts";
 
 export async function handleGenerate(
   body: unknown,
+  requestId: string,
 ): Promise<Response> {
+  const logger = createRequestLogger(requestId);
+  logger.info("Pipeline starting");
   // Validate and parse input
   if (
     !body || typeof body !== "object" || !("rawPrompt" in body) ||
     typeof (body as { rawPrompt: unknown }).rawPrompt !== "string" ||
     (body as { rawPrompt: string }).rawPrompt.trim().length === 0
   ) {
+    logger.error("Invalid request: missing or empty rawPrompt");
     return new Response(JSON.stringify({ error: "rawPrompt is required" }), {
       status: 400,
     });
@@ -34,18 +39,55 @@ export async function handleGenerate(
     targetHint: rawBody.targetHint,
   };
 
+  // Stage 1: Analyze
+  const analyzeEnd = logStage(logger, "analyze");
   const analysis = analyze(request);
+  analyzeEnd({
+    needsJson: analysis.needsJson,
+    needsCitations: analysis.needsCitations,
+    maxWords: analysis.maxWords,
+  });
+
+  // Stage 2: Synthesize
+  const synthesizeEnd = logStage(logger, "synthesize");
   const ir = synthesize(request.rawPrompt, analysis);
   // Placeholder for future Ax/DSPy optimization:
   const ir2 = ir;
+  synthesizeEnd({
+    role: ir2.role,
+    constraintsCount: ir2.constraints.length,
+    styleCount: ir2.style.length,
+  });
 
+  // Stage 3: Compile
+  const compileEnd = logStage(logger, "compile");
   const compiled = compileIR(ir2, request.rawPrompt);
+  compileEnd({
+    systemPromptLength: compiled.system.length,
+    userPromptLength: compiled.user.length,
+    temperature: compiled.decoding.temperature,
+    maxTokens: compiled.decoding.maxTokens,
+  });
 
-  // Pass capabilities to route for dependency injection (pure function)
+  // Stage 4: Route
+  const routeEnd = logStage(logger, "route");
   const capabilities = { hasCloud: hasCloud(), hasLocalHttp: hasLocalHttp() };
   const decision = route(capabilities, request.targetHint);
+  routeEnd({
+    model: decision.model,
+    targetHint: request.targetHint,
+    hasCloud: capabilities.hasCloud,
+    hasLocalHttp: capabilities.hasLocalHttp,
+  });
 
-  // Handle Result type from adapter
+  // Stage 5: Adapter call
+  const adapterEnd = logStage(logger, "adapter");
+  logger.info("Calling adapter", {
+    model: decision.model,
+    temperature: compiled.decoding.temperature,
+    maxTokens: compiled.decoding.maxTokens,
+  });
+
   const adapterResult = await decision.adapter({
     system: compiled.system,
     user: compiled.user,
@@ -55,6 +97,12 @@ export async function handleGenerate(
 
   if (!adapterResult.ok) {
     const { error } = adapterResult;
+    adapterEnd({ success: false, errorKind: error.kind });
+    logger.error("Adapter call failed", error, {
+      errorKind: error.kind,
+      errorDetail: error.kind === "NETWORK_ERROR" ? error.body : error.detail,
+    });
+
     // Map error kinds to HTTP status codes
     const status = error.kind === "CONFIG_MISSING"
       ? 500
@@ -71,12 +119,30 @@ export async function handleGenerate(
   }
 
   const { text } = adapterResult.value;
+  adapterEnd({
+    success: true,
+    responseLength: text.length,
+  });
+
+  // Stage 6: Validate
+  const validateEnd = logStage(logger, "validate");
   const validationResult = validateOrRepair(text);
   const validationMetrics: {
     readonly wasRepaired: boolean;
     readonly errorKind: string | null;
     readonly errorDetail: string | null;
   } = getValidationMetrics(validationResult);
+  validateEnd({
+    wasRepaired: validationMetrics.wasRepaired,
+    errorKind: validationMetrics.errorKind,
+  });
+
+  if (validationMetrics.wasRepaired) {
+    logger.warn("Response required repair", {
+      errorKind: validationMetrics.errorKind,
+      errorDetail: validationMetrics.errorDetail,
+    });
+  }
 
   const result: FinalResponse = {
     output: validationResult.value,
@@ -88,6 +154,12 @@ export async function handleGenerate(
       validation: validationMetrics,
     },
   };
+
+  logger.info("Pipeline completed successfully", {
+    answerLength: result.output.answer.length,
+    citationsCount: result.output.citations.length,
+    wasRepaired: validationMetrics.wasRepaired,
+  });
 
   return new Response(JSON.stringify(result, null, 2), {
     headers: { "content-type": "application/json; charset=utf-8" },
