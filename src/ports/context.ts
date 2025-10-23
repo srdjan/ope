@@ -12,7 +12,7 @@ export type ContextInstruction = {
   readonly objectivePrefix?: string; // Prepend to objective
   readonly additionalConstraints?: ReadonlyArray<string>;
   readonly additionalStyle?: ReadonlyArray<string>;
-  readonly temperatureOverride?: number; // Override default 0.2
+  readonly temperatureOverride?: number; // Override default 1
   readonly maxTokensOverride?: number; // Override default 600
   readonly systemSuffix?: string; // Append to compiled system prompt
   readonly userPrefix?: string; // Prepend to compiled user prompt

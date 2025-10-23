@@ -38,7 +38,13 @@ OPE is a Deno-based API that takes a raw user prompt, builds a richer instructio
    ```
    Keep this terminal running. The server listens on `http://127.0.0.1:8787`.
 
-3. **Make your first API call**
+3. **Open the browser UI**
+   - Visit [http://127.0.0.1:8787/](http://127.0.0.1:8787/) in your browser.
+   - Enter a baseline prompt and press **Enhance Prompt**. The button locks and shows a spinner while the request runs.
+   - Review the enhanced prompt in the read-only textarea and use **Copy** to place it on your clipboard; transient status text confirms success.
+   - Any API errors appear inline under the panels so you can retry quickly.
+
+4. **Make your first API call**
    - Open a second terminal.
    - Use the provided `call` script (works with the default echo adapter):
      ```bash
@@ -73,6 +79,8 @@ OPE is a Deno-based API that takes a raw user prompt, builds a richer instructio
 ## 3. Configuration
 
 OPE reads configuration from environment variables. You can export them in your shell or place them in a `.env` file and load it (e.g., using `direnv` or manually exporting before running tasks).
+All bundled `deno task …` commands already include `--env-file=.env`, so editing
+the root `.env` and restarting `deno task dev` is usually enough.
 
 ### Environment Variables Overview
 
@@ -82,7 +90,7 @@ OPE reads configuration from environment variables. You can export them in your 
 | `LLM_BASE_URL`  | Optional (local HTTP)     | *(empty)*         | URL for a local HTTP language model endpoint that accepts `POST { prompt, max_tokens, temperature }`. |
 | `CLOUD_BASE_URL`| Optional (cloud)          | *(empty)*         | Base URL for an OpenAI-compatible API. |
 | `CLOUD_API_KEY` | Optional (cloud)          | *(empty)*         | API key used for `Authorization: Bearer`. |
-| `CLOUD_MODEL`   | Optional (cloud)          | `gpt-4o-mini`     | Model name passed to the cloud API. |
+| `CLOUD_MODEL`   | Optional (cloud)          | `gpt5-mini`       | Model name passed to the cloud API. |
 | `OPE_HOST`      | Optional (clients/tests)  | `http://127.0.0.1:8787` | Override target host for client scripts and remote tests. (`test:remote` defaults to `https://ope.timok.deno.net`.) |
 | `OPE_API_KEY`   | Optional (remote testing) | *(empty)*         | Used only by remote smoke tests that hit protected deployments. |
 
@@ -108,7 +116,7 @@ deno task call '{"rawPrompt":"Health benefits of green tea?","taskType":"qa","ta
 ```bash
 export CLOUD_BASE_URL=https://api.openai.com
 export CLOUD_API_KEY=sk-...
-export CLOUD_MODEL=gpt-4o-mini
+export CLOUD_MODEL=gpt5-mini
 deno task dev
 ```
 

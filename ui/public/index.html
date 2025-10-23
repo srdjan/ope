@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Online Prompt Enhancer</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #f6f6f8;
+        --card: #ffffff;
+        --border: #d7d7e0;
+        --text: #1c1c1f;
+        --muted: #5a5a62;
+        --accent: #2f6fed;
+        --accent-hover: #2154c3;
+        --error: #d63d3d;
+        --font-body: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+        --radius: 16px;
+        --shadow: 0 12px 32px rgba(34, 43, 68, 0.12);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: var(--bg);
+        font-family: var(--font-body);
+        color: var(--text);
+        display: flex;
+        justify-content: center;
+        padding: 32px 16px 64px;
+      }
+
+      main {
+        width: min(960px, 100%);
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+      }
+
+      header {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 24px 28px;
+        background: var(--card);
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow);
+      }
+
+      header h1 {
+        margin: 0;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+      }
+
+      header p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.95rem;
+        line-height: 1.5;
+      }
+
+      section.panel {
+        padding: 28px;
+        background: var(--card);
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow);
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      label {
+        display: block;
+        font-weight: 500;
+        font-size: 0.95rem;
+        margin-bottom: 8px;
+      }
+
+      .label-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .label-row label {
+        margin: 0;
+      }
+
+      textarea {
+        width: 100%;
+        min-height: 200px;
+        padding: 16px 18px;
+        font-family: "JetBrains Mono", "SFMono-Regular", ui-monospace, Menlo,
+          Consolas, "Liberation Mono", monospace;
+        font-size: 0.95rem;
+        line-height: 1.5;
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        resize: vertical;
+        background: rgba(255, 255, 255, 0.8);
+        transition: border 120ms ease, box-shadow 120ms ease;
+      }
+
+      textarea:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(47, 111, 237, 0.16);
+      }
+
+      textarea[readonly] {
+        background: rgba(248, 248, 252, 0.7);
+        color: var(--text);
+      }
+
+      textarea::placeholder {
+        color: rgba(92, 95, 109, 0.68);
+      }
+
+      .form-actions {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+
+      button {
+        cursor: pointer;
+        border: none;
+        border-radius: 999px;
+        padding: 0.75rem 1.75rem;
+        font-weight: 600;
+        font-size: 0.95rem;
+        letter-spacing: 0.01em;
+        transition: transform 120ms ease, box-shadow 120ms ease,
+          background 120ms ease;
+      }
+
+      button[type="submit"] {
+        background: var(--accent);
+        color: white;
+        box-shadow: 0 10px 24px rgba(47, 111, 237, 0.22);
+      }
+
+      button[type="submit"]:hover {
+        background: var(--accent-hover);
+        transform: translateY(-1px);
+        box-shadow: 0 14px 28px rgba(47, 111, 237, 0.28);
+      }
+
+      button[type="submit"][disabled],
+      button[type="submit"][data-loading="true"] {
+        background: var(--accent-hover);
+        opacity: 0.65;
+        cursor: progress;
+        transform: none;
+        box-shadow: none;
+      }
+
+      button[type="submit"][data-loading="true"]::after {
+        content: "";
+        display: inline-block;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        border: 2px solid rgba(255, 255, 255, 0.4);
+        border-top-color: white;
+        margin-left: 12px;
+        animation: spinner 700ms linear infinite;
+        vertical-align: middle;
+      }
+
+      @keyframes spinner {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      button.copy {
+        background: rgba(47, 111, 237, 0.1);
+        color: var(--accent);
+        padding: 0.55rem 1.2rem;
+        border-radius: 12px;
+        box-shadow: none;
+      }
+
+      button.copy:hover {
+        background: rgba(47, 111, 237, 0.16);
+      }
+
+      button.copy:disabled {
+        color: rgba(47, 111, 237, 0.45);
+        background: rgba(47, 111, 237, 0.08);
+        cursor: not-allowed;
+      }
+
+      .status {
+        font-size: 0.9rem;
+        color: var(--muted);
+      }
+
+      .feedback {
+        font-size: 0.85rem;
+        color: var(--muted);
+        min-height: 1em;
+      }
+
+      .error {
+        background: rgba(214, 61, 61, 0.08);
+        border: 1px solid rgba(214, 61, 61, 0.32);
+        color: var(--error);
+        padding: 14px 18px;
+        border-radius: 12px;
+        font-size: 0.92rem;
+      }
+
+      @media (max-width: 720px) {
+        header,
+        section.panel {
+          padding: 22px;
+        }
+
+        textarea {
+          min-height: 160px;
+        }
+
+        .form-actions {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .form-actions button {
+          width: 100%;
+          text-align: center;
+        }
+
+        .label-row {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 8px;
+        }
+      }
+    </style>
+    <script defer src="https://unpkg.com/htmx.org@1.9.12"></script>
+    <script defer src="https://unpkg.com/htmx.org@1.9.12/dist/ext/json-enc.js"></script>
+    <script>
+      (() => {
+        const enhanceFormId = "enhance-form";
+        const outputId = "enhanced-output";
+        const statusId = "status-text";
+        const errorId = "error-message";
+        const copyButtonId = "copy-button";
+        const copyFeedbackId = "copy-feedback";
+
+        const createState = (overrides = {}) =>
+          Object.freeze({
+            isLoading: false,
+            answer: "",
+            error: null,
+            copyFeedback: "",
+            ...overrides,
+          });
+
+        const mergeState = (prev, patch) => createState({ ...prev, ...patch });
+
+        const parseJsonSafe = (raw) => {
+          try {
+            return raw ? JSON.parse(raw) : null;
+          } catch {
+            return null;
+          }
+        };
+
+        const deriveAnswer = (payload) =>
+          payload && payload.output && typeof payload.output.answer === "string"
+            ? payload.output.answer
+            : "";
+
+        const deriveErrorMessage = (payload, status) => {
+          if (payload) {
+            if (typeof payload.detail === "string" && payload.detail.trim().length) {
+              return payload.detail.trim();
+            }
+            if (typeof payload.error === "string" && payload.error.trim().length) {
+              return payload.error.trim();
+            }
+            if (
+              payload.output &&
+              payload.output.answer &&
+              typeof payload.output.answer === "string"
+            ) {
+              return payload.output.answer.trim();
+            }
+          }
+          return status && status >= 500
+            ? "The enhancer is unavailable. Please try again shortly."
+            : "We could not enhance that prompt. Double-check the text and try once more.";
+        };
+
+        const init = () => {
+          const elements = Object.freeze({
+            form: document.getElementById(enhanceFormId),
+            output: document.getElementById(outputId),
+            status: document.getElementById(statusId),
+            error: document.getElementById(errorId),
+            submit: document.querySelector(`#${enhanceFormId} button[type="submit"]`),
+            copy: document.getElementById(copyButtonId),
+            feedback: document.getElementById(copyFeedbackId),
+          });
+
+          if (!elements.form || !elements.submit || !elements.output) {
+            console.warn(
+              "OPE UI: missing required elements. UI will not function.",
+            );
+            return;
+          }
+
+          let state = createState();
+          let clearCopyFeedbackTimer = 0;
+
+          const render = (currentState) => {
+            const { isLoading, answer, error, copyFeedback } = currentState;
+
+            if (elements.submit) {
+              elements.submit.disabled = isLoading;
+              if (isLoading) {
+                elements.submit.setAttribute("data-loading", "true");
+              } else {
+                elements.submit.removeAttribute("data-loading");
+              }
+            }
+
+            if (elements.status) {
+              elements.status.textContent = isLoading ? "Enhancing…" : "";
+              elements.status.hidden = !isLoading;
+            }
+
+            if (elements.error) {
+              if (error) {
+                elements.error.textContent = error;
+                elements.error.hidden = false;
+              } else {
+                elements.error.textContent = "";
+                elements.error.hidden = true;
+              }
+            }
+
+            if (elements.output) {
+              elements.output.value = answer;
+            }
+
+            if (elements.copy) {
+              elements.copy.disabled = !answer || isLoading;
+            }
+
+            if (elements.feedback) {
+              elements.feedback.textContent = copyFeedback;
+            }
+          };
+
+          const replaceState = (next) => {
+            state = createState(next);
+            render(state);
+            return state;
+          };
+
+          const updateState = (transform) => replaceState(transform(state));
+
+          const resetCopyFeedbackLater = () => {
+            if (clearCopyFeedbackTimer) {
+              window.clearTimeout(clearCopyFeedbackTimer);
+            }
+            clearCopyFeedbackTimer = window.setTimeout(() => {
+              updateState((prev) => mergeState(prev, { copyFeedback: "" }));
+            }, 2000);
+          };
+
+          const isEnhanceForm = (target) => target === elements.form;
+
+          render(state);
+
+          document.body.addEventListener("htmx:beforeRequest", (event) => {
+            if (!isEnhanceForm(event.target)) return;
+            updateState((prev) =>
+              mergeState(prev, { isLoading: true, error: null, copyFeedback: "" })
+            );
+          });
+
+          document.body.addEventListener("htmx:afterRequest", (event) => {
+            if (!isEnhanceForm(event.target)) return;
+            const { xhr, successful } = event.detail;
+            const payload = parseJsonSafe(xhr.responseText);
+
+            if (successful) {
+              updateState((prev) =>
+                mergeState(prev, {
+                  isLoading: false,
+                  answer: deriveAnswer(payload),
+                  error: null,
+                })
+              );
+              return;
+            }
+
+            updateState((prev) =>
+              mergeState(prev, {
+                isLoading: false,
+                error: deriveErrorMessage(payload, xhr.status),
+              })
+            );
+          });
+
+          document.body.addEventListener("htmx:sendError", (event) => {
+            if (!isEnhanceForm(event.target)) return;
+            updateState((prev) =>
+              mergeState(prev, {
+                isLoading: false,
+                error: "Network error: please check your connection and retry.",
+              })
+            );
+          });
+
+          document.body.addEventListener("htmx:responseError", (event) => {
+            if (!isEnhanceForm(event.target)) return;
+            const payload = parseJsonSafe(event.detail.xhr.responseText);
+            updateState((prev) =>
+              mergeState(prev, {
+                isLoading: false,
+                error: deriveErrorMessage(payload, event.detail.xhr.status),
+              })
+            );
+          });
+
+          if (elements.copy) {
+            elements.copy.addEventListener("click", async () => {
+              if (!state.answer || state.isLoading) {
+                return;
+              }
+              try {
+                await navigator.clipboard.writeText(state.answer);
+                updateState((prev) =>
+                  mergeState(prev, { copyFeedback: "Copied to clipboard." })
+                );
+                resetCopyFeedbackLater();
+              } catch (_err) {
+                updateState((prev) =>
+                  mergeState(prev, {
+                    error:
+                      "Unable to copy to clipboard. Your browser may not allow it.",
+                  })
+                );
+              }
+            });
+          }
+        };
+
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", init, { once: true });
+        } else {
+          init();
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>Online Prompt Enhancer</h1>
+        <p>
+          Write your baseline prompt, press enhance, and receive a refined version
+          tuned for high-quality model responses.
+        </p>
+      </header>
+
+      <section class="panel" aria-labelledby="original-label">
+        <label id="original-label" for="raw-prompt">Original Prompt</label>
+        <form
+          id="enhance-form"
+          hx-post="/v1/generate"
+          hx-trigger="submit"
+          hx-swap="none"
+          hx-ext="json-enc"
+        >
+          <textarea
+            id="raw-prompt"
+            name="rawPrompt"
+            required
+            placeholder="Paste the prompt you want to polish. Add goals, constraints, or any relevant context."
+            autocomplete="off"
+          ></textarea>
+          <div class="form-actions">
+            <button type="submit">Enhance Prompt</button>
+            <span class="status" id="status-text" hidden role="status" aria-live="polite">
+              Enhancing…
+            </span>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel" aria-labelledby="enhanced-label">
+        <div class="label-row">
+          <label id="enhanced-label" for="enhanced-output">Enhanced Prompt</label>
+          <button
+            type="button"
+            class="copy"
+            id="copy-button"
+            aria-live="polite"
+            aria-label="Copy enhanced prompt to clipboard"
+            disabled
+          >
+            Copy
+          </button>
+        </div>
+        <textarea
+          id="enhanced-output"
+          readonly
+          placeholder="Your enhanced prompt will appear here."
+        ></textarea>
+        <div class="feedback" id="copy-feedback" aria-live="polite"></div>
+      </section>
+
+      <div class="error" id="error-message" role="alert" hidden></div>
+    </main>
+  </body>
+</html>

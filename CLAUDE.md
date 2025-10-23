@@ -41,11 +41,14 @@ LLM_BASE_URL=http://127.0.0.1:11434/generate # Endpoint expecting {prompt, max_t
 # Cloud API (optional)
 CLOUD_BASE_URL=https://api.openai.com        # OpenAI-compatible base URL
 CLOUD_API_KEY=sk-...                         # API key
-CLOUD_MODEL=gpt-4o-mini                      # Model name (default: gpt-4o-mini)
+CLOUD_MODEL=gpt5-mini                        # Model name (default: gpt5-mini)
 
 # Client configuration
 OPE_HOST=http://127.0.0.1:8787              # Override target host in scripts/call.ts
 ```
+
+All `deno task …` commands use `--env-file=.env`, so populate the root `.env`
+once and restart the relevant task to apply changes.
 
 ## Architecture
 

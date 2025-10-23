@@ -1,12 +1,12 @@
 {
   "lock": false,
   "tasks": {
-    "dev": "deno run --allow-net --allow-env --allow-read src/server.ts",
-    "call": "deno run --allow-net --allow-env scripts/call.ts",
+    "dev": "deno run --allow-net --allow-env --allow-read --env-file=.env src/server.ts",
+    "call": "deno run --allow-net --allow-env --env-file=.env scripts/call.ts",
     "gen:local": "deno task call '{\"rawPrompt\":\"Explain Raft in ~150 words\",\"taskType\":\"summarize\",\"targetHint\":\"local\"}'",
     "gen:cloud": "deno task call '{\"rawPrompt\":\"Extract company and role from: Jane Doe worked at ExampleCorp as Staff Engineer.\",\"taskType\":\"extract\"}'",
-    "test": "deno test -A",
-    "test:remote": "OPE_HOST=https://ope.timok.deno.net deno test --allow-net --allow-env test/remote.smoke.test.ts"
+    "test": "deno test --env-file=.env -A",
+    "test:remote": "OPE_HOST=https://ope.timok.deno.net deno test --env-file=.env --allow-net --allow-env test/remote.smoke.test.ts"
   },
   "lint": {
     "exclude": ["src/adapters/openaiStyle.ts"]

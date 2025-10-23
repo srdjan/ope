@@ -47,7 +47,7 @@ export function compileIR(
   }
 
   // Decoding parameters (context overrides defaults)
-  const temperature = contextInstr?.temperatureOverride ?? 0.2;
+  const temperature = contextInstr?.temperatureOverride ?? 1;
   const maxTokens = contextInstr?.maxTokensOverride ?? 600;
 
   return {

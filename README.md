@@ -11,6 +11,7 @@ validate JSON.
 - Error Handling: **Result<T,E>** pattern (no exceptions in core)
 - Architecture: **Ports & Adapters** pattern
 - Client: **Deno task** (`scripts/call.ts`)
+- UI: **Static HTMX page** at `/` for interactive prompt enhancement
 - Models supported:
   - `local/echo` (no deps; deterministic)
   - `local/http` (POST to `LLM_BASE_URL` expecting `{ text: string }`)
@@ -25,8 +26,13 @@ validate JSON.
   exceptions
 - **Testable Config**: Port pattern enables dependency injection for testing
 - **Immutable Data**: All types use `readonly` for safety
+- **Built-in Web UI**: Minimal, responsive page with loading states and
+  copy-to-clipboard for enhanced prompts
 
 ## Quickstart
+
+Update `.env` with your local and cloud credentials (tasks automatically load it
+via `--env-file=.env`), then run:
 
 ```bash
 # Start the development server
@@ -43,7 +49,13 @@ deno lint
 deno fmt
 ```
 
+With the dev server running, open [http://127.0.0.1:8787/](http://127.0.0.1:8787/)
+to access the browser UI or keep using the API endpoints directly.
+
 ## Configuration
+
+All `deno task …` commands are configured to load environment variables from
+`.env`. Update that file and restart the dev server to pick up changes.
 
 ### Environment Variables
 
@@ -57,7 +69,7 @@ LLM_BASE_URL=http://127.0.0.1:11434/generate # Local model endpoint
 # Cloud API (optional - OpenAI compatible)
 CLOUD_BASE_URL=https://api.openai.com        # API base URL
 CLOUD_API_KEY=sk-...                         # API key
-CLOUD_MODEL=gpt-4o-mini                      # Model name (default: gpt-4o-mini)
+CLOUD_MODEL=gpt5-mini                        # Model name (default: gpt5-mini)
 ```
 
 ### Testing Different Adapters
@@ -144,6 +156,27 @@ processing:
 Health check endpoint.
 
 **Response**: `200 OK` with body `"ok"`
+
+## Web UI
+
+The repository includes a static, server-rendered HTML page at
+`ui/public/index.html` that the Deno server serves from `/`. It uses HTMX for
+form submission while keeping the markup simple and cache-friendly.
+
+- **Prompt Input**: enter the baseline prompt, then submit with the `Enhance Prompt`
+  button.
+- **Loading State**: the submit button locks and shows a spinner while awaiting
+  the `/v1/generate` response.
+- **Enhanced Output**: the read-only textarea renders `output.answer`. Errors
+  from the API surface inline with helpful copy.
+- **Copy to Clipboard**: a dedicated button copies the enhanced prompt and shows
+  transient confirmation text.
+- **Responsive Layout**: spacing and typography adjust cleanly for mobile and
+  desktop breakpoints.
+
+When running in production (via `DENO_DEPLOYMENT_ID`), the HTML is cached in
+memory after the first read; locally it refreshes on each request, making UI
+tweaks instantaneous.
 
 ## Architecture
 

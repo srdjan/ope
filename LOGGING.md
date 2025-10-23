@@ -247,7 +247,7 @@ ERROR: localHttp: HTTP error response {
 INFO: openaiStyle adapter called {
   "adapter":"openaiStyle",
   "url":"https://api.openai.com/v1/chat/completions",
-  "model":"gpt-4o-mini",
+  "model":"gpt5-mini",
   "systemLength":217,
   "userLength":170,
   "maxTokens":600,
@@ -258,7 +258,7 @@ INFO: openaiStyle response received {
   "adapter":"openaiStyle",
   "duration":1245,
   "responseLength":342,
-  "model":"gpt-4o-mini",
+  "model":"gpt5-mini",
   "finishReason":"stop"
 }
 ```

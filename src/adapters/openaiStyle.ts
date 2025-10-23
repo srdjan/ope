@@ -6,7 +6,7 @@ import type {
 } from "./types.ts";
 import { err, ok, type Result } from "../lib/result.ts";
 import { CLOUD_API_KEY, CLOUD_BASE_URL, CLOUD_MODEL } from "../config.ts";
-import { logInfo, logError } from "../lib/logger.ts";
+import { logError, logInfo } from "../lib/logger.ts";
 
 export const openaiStyle: Adapter = async (
   args: GenerateArgs,
@@ -20,15 +20,22 @@ export const openaiStyle: Adapter = async (
   }
 
   const url = new URL("/v1/chat/completions", CLOUD_BASE_URL).toString();
-  const payload = {
+  const normalizedModel = CLOUD_MODEL.toLowerCase();
+  const supportsCustomTemperature = !normalizedModel.includes("gpt5");
+  const resolvedTemperature = args.temperature ?? 1;
+
+  const payload: Record<string, unknown> = {
     model: CLOUD_MODEL,
     messages: [
       { role: "system", content: args.system },
       { role: "user", content: args.user },
     ],
-    temperature: args.temperature,
-    max_tokens: args.maxTokens,
+    max_completion_tokens: args.maxTokens,
   };
+
+  if (supportsCustomTemperature) {
+    payload.temperature = resolvedTemperature;
+  }
 
   logInfo("openaiStyle adapter called", {
     adapter: "openaiStyle",
@@ -37,7 +44,7 @@ export const openaiStyle: Adapter = async (
     systemLength: args.system.length,
     userLength: args.user.length,
     maxTokens: args.maxTokens,
-    temperature: args.temperature,
+    temperature: supportsCustomTemperature ? resolvedTemperature : "default",
   });
 
   try {

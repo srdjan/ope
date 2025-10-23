@@ -23,7 +23,7 @@ export const makeEnvConfig = (): ConfigPort => {
     port: Number(Deno.env.get("PORT") ?? 8787),
     cloudBaseUrl: Deno.env.get("CLOUD_BASE_URL") ?? "",
     cloudApiKey: Deno.env.get("CLOUD_API_KEY") ?? "",
-    cloudModel: Deno.env.get("CLOUD_MODEL") ?? "gpt-4o-mini",
+    cloudModel: Deno.env.get("CLOUD_MODEL") ?? "gpt5-mini",
     llmBaseUrl: Deno.env.get("LLM_BASE_URL") ?? "",
   });
 
@@ -65,7 +65,7 @@ export const makeTestConfig = (
     port: overrides.port ?? 8787,
     cloudBaseUrl: overrides.cloudBaseUrl ?? "",
     cloudApiKey: overrides.cloudApiKey ?? "",
-    cloudModel: overrides.cloudModel ?? "gpt-4o-mini",
+    cloudModel: overrides.cloudModel ?? "gpt5-mini",
     llmBaseUrl: overrides.llmBaseUrl ?? "",
   });
 
