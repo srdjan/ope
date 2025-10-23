@@ -47,6 +47,7 @@ async function callGenerate(payload: {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
+    signal: AbortSignal.timeout(15_000),
   });
 
   const duration = Math.round(performance.now() - startTime);
@@ -87,7 +88,9 @@ async function callGenerate(payload: {
 
 Deno.test("Remote OPE - Health check", async () => {
   logTest("Health check starting", { host: OPE_HOST });
-  const response = await fetch(`${OPE_HOST}/health`);
+  const response = await fetch(`${OPE_HOST}/health`, {
+    signal: AbortSignal.timeout(10_000),
+  });
   logTest("Health check response", {
     status: response.status,
     statusText: response.statusText,

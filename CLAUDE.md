@@ -10,8 +10,8 @@ that implements a complete pipeline: analyze → synthesize → compile → rout
 generate → validate. The system is model-agnostic, supporting local echo/HTTP
 models and cloud OpenAI-compatible APIs.
 
-**Tech Stack**: Deno, Light Functional TypeScript (no classes), Web Platform
-APIs
+**Tech Stack**: Deno 2.x, Light Functional TypeScript (no classes), Web
+Platform APIs, Branded Types, Result<T,E> pattern, Ports & Adapters
 
 ## Development Commands
 
@@ -26,6 +26,7 @@ deno task call 'JSON' # Custom API call with JSON payload
 
 # Testing
 deno test -A          # Run all tests
+deno task test:remote # Run remote smoke tests against deployed instance
 ```
 
 ## Environment Variables
@@ -102,7 +103,69 @@ Core types in [src/types.ts](src/types.ts):
 - `CompiledPrompt` - System/user prompts plus decoding parameters (temperature,
   maxTokens)
 - `FinalResponse` - API output with validated `{answer, citations}` plus
-  metadata (model, IR, compiled, decoding)
+  metadata (model, IR, compiled, decoding, validation)
+
+### Branded Types
+
+OPE uses branded types ([src/lib/branded.ts](src/lib/branded.ts)) to prevent
+mixing incompatible primitive values at compile time:
+
+- `ModelId` - Model identifier ("local/echo" | "local/http" |
+  "cloud/openai-style")
+- `PromptText` - User's input (validated non-empty)
+- `SystemPrompt` / `UserPrompt` - Compiled prompt messages
+- `Temperature` - number 0-2 (validated range)
+- `MaxTokens` - number > 0 (validated positive)
+- `CitationUrl` - string (validated as URL or "unknown")
+
+Smart constructors validate on creation and prevent invalid values at runtime:
+
+```typescript
+makeTemperature(1.5); // OK: returns Temperature
+makeTemperature(3.0); // Throws: range validation error
+```
+
+### Result Type Pattern
+
+All adapters return `Result<T, E>` instead of throwing exceptions:
+
+```typescript
+type Result<T, E> = Ok<T> | Err<E>;
+
+// Adapter result
+Result<GenerateResult, AdapterError> =
+  | { ok: true; value: { text: string } }
+  | { ok: false; error: { kind, detail } };
+```
+
+Benefits:
+
+- Errors are **values**, not exceptions
+- **Explicit error handling** in pipelines
+- Stack traces not required in normal error flows
+- Testable error paths without try/catch
+
+### Ports & Adapters Pattern
+
+**ConfigPort** ([src/ports/config.ts](src/ports/config.ts)) enables testable
+configuration:
+
+```typescript
+interface ConfigPort {
+  port: number;
+  cloudBaseUrl: string;
+  hasCloud(): boolean;
+  hasLocalHttp(): boolean;
+}
+```
+
+Implementations:
+
+- `makeEnvConfig()` - reads from environment variables
+- `makeTestConfig()` - for testing with dependency injection
+
+This enables **testable, swappable configuration** without modifying business
+logic.
 
 ## API
 
@@ -130,10 +193,30 @@ Response:
     "model": "local/echo | local/http | cloud/openai-style",
     "ir": { "role": "...", "objective": "...", ... },
     "compiled": { "system": "...", "user": "..." },
-    "decoding": { "temperature": 0.2, "maxTokens": 600 }
+    "decoding": { "temperature": 0.2, "maxTokens": 600 },
+    "validation": {
+      "wasRepaired": false,
+      "errorKind": null,
+      "errorDetail": null
+    }
   }
 }
 ```
+
+**Validation Tracking**: The `validation` field provides transparency about
+response processing:
+
+- `wasRepaired: false` - Response was valid JSON with correct schema
+- `wasRepaired: true` - Response was repaired (check `errorKind` and
+  `errorDetail`)
+  - `errorKind: "INVALID_JSON"` - Response wasn't valid JSON (wrapped as
+    answer)
+  - `errorKind: "MISSING_FIELDS"` - JSON missing required fields (filled
+    defaults)
+  - `errorKind: "INVALID_TYPES"` - Type coercion needed
+
+High repair rates indicate prompt engineering issues or models not following
+JSON schema.
 
 Health check: `GET /health` → returns "ok"
 
@@ -143,35 +226,44 @@ This codebase follows **Light Functional TypeScript** principles:
 
 - **No classes or inheritance** - Use pure functions and type aliases
 - **Immutable data** - All transformations return new objects
-- **Explicit types** - Strong typing throughout (GenerateArgs, PromptIR, etc.)
+- **Explicit types** - Strong typing throughout (branded types for primitives)
 - **Simple composition** - Pipeline stages compose cleanly via function calls
 - **Minimal dependencies** - Deno standard library + Web Platform APIs only
-- **Error handling** - Throws at adapter boundaries; validate/repair at edges
+- **Error handling** - Result types in core; throws only at edges
+- **Pure functions** - No side effects in engine/; effects only in
+  adapters/server
 
 ### Module Organization
 
 ```
 src/
-  server.ts          # HTTP server with routing logic
-  routes/            # Request handlers (generate.ts)
+  server.ts          # HTTP server with routing and logging
+  routes/            # Request handlers (generate.ts - pipeline orchestration)
   engine/            # Pure transformation functions (analyze, synthesize, compile, route, validate)
   adapters/          # Model integrations (localEcho, localHttp, openaiStyle)
+  lib/               # Utilities (result.ts, branded.ts, logger.ts)
+  ports/             # Dependency injection interfaces (config.ts)
   types.ts           # Core type definitions
-  config.ts          # Environment variable accessors
+  config.ts          # Environment variable facade
 scripts/
   call.ts            # CLI client for testing API
 test/
-  smoke.test.ts      # Basic integration tests
+  smoke.test.ts      # Local integration tests
+  remote.smoke.test.ts # Remote deployment smoke tests
 ```
 
 **Key principles**:
 
 - **engine/** contains pure logic with no I/O
-- **adapters/** handle external model calls
+- **adapters/** handle external model calls (return Result types)
 - **routes/** orchestrate the pipeline
+- **lib/** provides reusable utilities (Result, branded types, logging)
+- **ports/** define interfaces for dependency injection
 - Types defined once in [types.ts](src/types.ts), imported everywhere
 
 ## Testing Strategy
+
+### Local Tests
 
 Run tests with `deno test -A`
 
@@ -192,6 +284,29 @@ export CLOUD_BASE_URL=https://api.openai.com
 export CLOUD_API_KEY=sk-...
 deno task gen:cloud
 ```
+
+### Remote Tests
+
+Test deployed instances with comprehensive smoke tests
+([test/remote.smoke.test.ts](test/remote.smoke.test.ts)):
+
+```bash
+# Test default deployed instance
+deno task test:remote
+
+# Test custom deployment
+OPE_HOST=https://your-instance.com deno task test:remote
+```
+
+**Coverage**:
+
+- Health check endpoint validation
+- Request/response structure for all task types (qa, extract, summarize)
+- Target hint routing (local/cloud)
+- IR synthesis and compilation validation
+- Error handling (empty prompts, invalid JSON)
+- Performance checks (response time < 30s)
+- Concurrent request handling
 
 ## Adding New Features
 
@@ -217,9 +332,34 @@ Each pipeline stage is independent:
 - **Validation**: Update schema in
   [src/engine/validate.ts](src/engine/validate.ts)
 
-The placeholder comment in
-[src/routes/generate.ts:16](src/routes/generate.ts#L16) (`ir2 = ir`) is reserved
-for future Ax/DSPy optimization.
+The placeholder assignment in [src/routes/generate.ts:61](src/routes/generate.ts#L61)
+(`ir2 = ir`) is reserved for future Ax/DSPy optimization.
+
+## Logging and Observability
+
+OPE implements structured logging throughout the pipeline
+([src/lib/logger.ts](src/lib/logger.ts)):
+
+- **Request ID tracking** - UUID generated per request, propagated through
+  pipeline
+- **ISO 8601 timestamps** - All log entries timestamped
+- **Log levels** - INFO, WARN, ERROR with contextual JSON data
+- **Stage-by-stage logging** - Each pipeline stage logs start/completion with
+  duration
+- **Adapter logging** - Detailed HTTP call logging with timing
+
+**Log format**:
+
+```
+[2025-10-23T12:11:16.594Z] INFO: Pipeline starting {"requestId":"abc-123"}
+[2025-10-23T12:11:16.595Z] INFO: Completed analyze stage {"stage":"analyze","duration":1,"requestId":"abc-123"}
+```
+
+**Response headers**: Every response includes `x-request-id` header for
+correlation.
+
+See [LOGGING.md](LOGGING.md) for comprehensive logging documentation and
+debugging tips.
 
 ## Common Gotchas
 
@@ -232,6 +372,10 @@ for future Ax/DSPy optimization.
    `{answer: text, citations: []}`
 5. **Lint exclusion**: [deno.json](deno.json) excludes openaiStyle.ts from
    linting
+6. **Branded type validation**: Smart constructors throw on invalid values at
+   runtime
+7. **Request ID correlation**: Always include request ID from `x-request-id`
+   header in bug reports
 
 ## License
 

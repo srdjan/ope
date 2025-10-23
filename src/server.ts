@@ -2,9 +2,14 @@ import { PORT } from "./config.ts";
 import { handleGenerate } from "./routes/generate.ts";
 import { createRequestLogger, logInfo, logError } from "./lib/logger.ts";
 
-logInfo("Server starting", { port: PORT, env: Deno.env.get("DENO_DEPLOYMENT_ID") ? "production" : "development" });
+const isDeploy = Boolean(Deno.env.get("DENO_DEPLOYMENT_ID"));
 
-Deno.serve({ port: PORT }, async (req) => {
+logInfo("Server starting", {
+  port: PORT,
+  env: isDeploy ? "production" : "development",
+});
+
+const handler = async (req: Request): Promise<Response> => {
   const requestId = crypto.randomUUID();
   const logger = createRequestLogger(requestId);
   const startTime = performance.now();
@@ -78,4 +83,10 @@ Deno.serve({ port: PORT }, async (req) => {
       }
     );
   }
-});
+};
+
+if (isDeploy) {
+  Deno.serve(handler);
+} else {
+  Deno.serve({ port: PORT }, handler);
+}
