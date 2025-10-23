@@ -1,6 +1,7 @@
 import { PORT } from "./config.ts";
 import { handleGenerate } from "./routes/generate.ts";
 import { createRequestLogger, logError, logInfo } from "./lib/logger.ts";
+import { JSON_HEADERS } from "./lib/httpErrors.ts";
 
 const isDeploy = Boolean(Deno.env.get("DENO_DEPLOYMENT_ID"));
 
@@ -82,7 +83,7 @@ const handler = async (req: Request): Promise<Response> => {
             }),
             {
               status: 400,
-              headers: { "content-type": "application/json" },
+              headers: JSON_HEADERS,
             },
           );
         } else {
@@ -91,7 +92,7 @@ const handler = async (req: Request): Promise<Response> => {
           const msg = err instanceof Error ? err.message : String(err);
           response = new Response(JSON.stringify({ error: msg }), {
             status: 500,
-            headers: { "content-type": "application/json" },
+            headers: JSON_HEADERS,
           });
         }
       }
@@ -123,14 +124,13 @@ const handler = async (req: Request): Promise<Response> => {
     const duration = Math.round(performance.now() - startTime);
     logger.error("Unhandled server error", err, { duration });
 
+    const headers = new Headers(JSON_HEADERS);
+    headers.set("x-request-id", requestId);
     return new Response(
       JSON.stringify({ error: "Internal server error", requestId }),
       {
         status: 500,
-        headers: {
-          "content-type": "application/json",
-          "x-request-id": requestId,
-        },
+        headers,
       },
     );
   }

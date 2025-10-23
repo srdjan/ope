@@ -8,9 +8,11 @@ import type {
   UserPrompt,
 } from "./lib/branded.ts";
 
+export type TaskType = "qa" | "extract" | "summarize";
+
 export type GenerateRequest = {
   readonly rawPrompt: PromptText;
-  readonly taskType?: "qa" | "extract" | "summarize";
+  readonly taskType?: TaskType;
   readonly targetHint?: "local" | "cloud";
   readonly context?: string; // Context ID (e.g., "medical", "legal", "code")
 };

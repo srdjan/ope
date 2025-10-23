@@ -32,10 +32,17 @@ export type UserPrompt = string & { readonly [UserPromptBrand]: true };
 export const makeUserPrompt = (s: string): UserPrompt => s as UserPrompt;
 
 // Temperature (must be 0-2)
+export const MIN_TEMPERATURE = 0;
+export const MAX_TEMPERATURE = 2;
+
 declare const TemperatureBrand: unique symbol;
 export type Temperature = number & { readonly [TemperatureBrand]: true };
 export const makeTemperature = (n: number): Temperature => {
-  if (n < 0 || n > 2) throw new Error(`Temperature must be 0-2, got ${n}`);
+  if (n < MIN_TEMPERATURE || n > MAX_TEMPERATURE) {
+    throw new Error(
+      `Temperature must be ${MIN_TEMPERATURE}-${MAX_TEMPERATURE}, got ${n}`,
+    );
+  }
   return n as Temperature;
 };
 
@@ -45,14 +52,6 @@ export type MaxTokens = number & { readonly [MaxTokensBrand]: true };
 export const makeMaxTokens = (n: number): MaxTokens => {
   if (n <= 0) throw new Error(`MaxTokens must be positive, got ${n}`);
   return n as MaxTokens;
-};
-
-// Word count
-declare const WordCountBrand: unique symbol;
-export type WordCount = number & { readonly [WordCountBrand]: true };
-export const makeWordCount = (n: number): WordCount => {
-  if (n < 0) throw new Error(`WordCount must be non-negative, got ${n}`);
-  return n as WordCount;
 };
 
 // Citation URL

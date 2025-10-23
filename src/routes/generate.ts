@@ -9,6 +9,11 @@ import type { ContextPort } from "../ports/context.ts";
 import { getContextPort } from "../contextConfig.ts";
 import { makePromptText } from "../lib/branded.ts";
 import { createRequestLogger, logStage } from "../lib/logger.ts";
+import {
+  createValidationError,
+  JSON_HEADERS,
+  mapAdapterErrorToHttpResponse,
+} from "../lib/httpErrors.ts";
 
 export async function handleGenerate(
   body: unknown,
@@ -18,7 +23,6 @@ export async function handleGenerate(
 ): Promise<Response> {
   const logger = createRequestLogger(requestId);
   logger.info("Pipeline starting");
-  const jsonHeaders = { "content-type": "application/json; charset=utf-8" };
   // Validate and parse input
   if (
     !body || typeof body !== "object" || !("rawPrompt" in body) ||
@@ -26,13 +30,7 @@ export async function handleGenerate(
     (body as { rawPrompt: string }).rawPrompt.trim().length === 0
   ) {
     logger.error("Invalid request: missing or empty rawPrompt");
-    return new Response(
-      JSON.stringify({ error: "rawPrompt is required" }),
-      {
-        status: 400,
-        headers: jsonHeaders,
-      },
-    );
+    return createValidationError("rawPrompt is required");
   }
 
   const rawBody = body as {
@@ -67,7 +65,7 @@ export async function handleGenerate(
         }),
         {
           status: 400,
-          headers: jsonHeaders,
+          headers: JSON_HEADERS,
         },
       );
     }
@@ -146,19 +144,7 @@ export async function handleGenerate(
       errorDetail: error.kind === "NETWORK_ERROR" ? error.body : error.detail,
     });
 
-    // Map error kinds to HTTP status codes
-    const status = error.kind === "CONFIG_MISSING"
-      ? 500
-      : error.kind === "NETWORK_ERROR"
-      ? 502
-      : 500;
-    return new Response(
-      JSON.stringify({
-        error: error.kind,
-        detail: error.kind === "NETWORK_ERROR" ? error.body : error.detail,
-      }),
-      { status, headers: jsonHeaders },
-    );
+    return mapAdapterErrorToHttpResponse(error);
   }
 
   const { text } = adapterResult.value;
@@ -205,6 +191,6 @@ export async function handleGenerate(
   });
 
   return new Response(JSON.stringify(result, null, 2), {
-    headers: jsonHeaders,
+    headers: JSON_HEADERS,
   });
 }

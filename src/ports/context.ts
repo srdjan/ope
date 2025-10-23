@@ -7,6 +7,8 @@
  * Follows Ports & Adapters pattern like ConfigPort.
  */
 
+import { MAX_TEMPERATURE, MIN_TEMPERATURE } from "../lib/branded.ts";
+
 export type ContextInstruction = {
   readonly roleSuffix?: string; // Append to role (e.g., "in medical field")
   readonly objectivePrefix?: string; // Prepend to objective
@@ -63,14 +65,15 @@ export function validateContextInstruction(
 ): ContextValidationError | null {
   const MAX_TEXT_LENGTH = 250_000;
 
-  // Validate temperature (0-2 range)
+  // Validate temperature (use constants from branded.ts for single source of truth)
   if (
     instr.temperatureOverride !== undefined &&
-    (instr.temperatureOverride < 0 || instr.temperatureOverride > 2)
+    (instr.temperatureOverride < MIN_TEMPERATURE ||
+      instr.temperatureOverride > MAX_TEMPERATURE)
   ) {
     return {
       kind: "INVALID_TEMPERATURE",
-      detail: `Temperature must be between 0 and 2, got ${instr.temperatureOverride}`,
+      detail: `Temperature must be between ${MIN_TEMPERATURE} and ${MAX_TEMPERATURE}, got ${instr.temperatureOverride}`,
     };
   }
 
