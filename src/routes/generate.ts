@@ -4,16 +4,18 @@ import { synthesize } from "../engine/synthesize.ts";
 import { compileIR } from "../engine/compile.ts";
 import { route } from "../engine/route.ts";
 import { getValidationMetrics, validateOrRepair } from "../engine/validate.ts";
-import { hasCloud, hasLocalHttp } from "../config.ts";
+import { config as envConfig, type ConfigPort } from "../config.ts";
 import { makePromptText } from "../lib/branded.ts";
 import { createRequestLogger, logStage } from "../lib/logger.ts";
 
 export async function handleGenerate(
   body: unknown,
   requestId: string,
+  cfg: ConfigPort = envConfig,
 ): Promise<Response> {
   const logger = createRequestLogger(requestId);
   logger.info("Pipeline starting");
+  const jsonHeaders = { "content-type": "application/json; charset=utf-8" };
   // Validate and parse input
   if (
     !body || typeof body !== "object" || !("rawPrompt" in body) ||
@@ -21,9 +23,13 @@ export async function handleGenerate(
     (body as { rawPrompt: string }).rawPrompt.trim().length === 0
   ) {
     logger.error("Invalid request: missing or empty rawPrompt");
-    return new Response(JSON.stringify({ error: "rawPrompt is required" }), {
-      status: 400,
-    });
+    return new Response(
+      JSON.stringify({ error: "rawPrompt is required" }),
+      {
+        status: 400,
+        headers: jsonHeaders,
+      },
+    );
   }
 
   const rawBody = body as {
@@ -71,7 +77,10 @@ export async function handleGenerate(
 
   // Stage 4: Route
   const routeEnd = logStage(logger, "route");
-  const capabilities = { hasCloud: hasCloud(), hasLocalHttp: hasLocalHttp() };
+  const capabilities = {
+    hasCloud: cfg.hasCloud(),
+    hasLocalHttp: cfg.hasLocalHttp(),
+  };
   const decision = route(capabilities, request.targetHint);
   routeEnd({
     model: decision.model,
@@ -114,7 +123,7 @@ export async function handleGenerate(
         error: error.kind,
         detail: error.kind === "NETWORK_ERROR" ? error.body : error.detail,
       }),
-      { status },
+      { status, headers: jsonHeaders },
     );
   }
 
@@ -162,6 +171,6 @@ export async function handleGenerate(
   });
 
   return new Response(JSON.stringify(result, null, 2), {
-    headers: { "content-type": "application/json; charset=utf-8" },
+    headers: jsonHeaders,
   });
 }

@@ -100,21 +100,16 @@ export function validateOrRepair(text: string): ValidationResult {
     citations = [];
   } else {
     citations = obj.citations.map((c, idx) => {
+      const raw = String(c);
       if (typeof c !== "string") {
         issues.push(`citation[${idx}] was ${typeof c}, coerced to string`);
       }
-      return makeCitationUrlSafe(String(c));
+      const safe = makeCitationUrlSafe(raw);
+      if (safe === ("unknown" as CitationUrl) && raw !== "unknown") {
+        issues.push(`citation[${idx}] was not a valid URL (coerced to "unknown")`);
+      }
+      return safe;
     });
-  }
-
-  // Additional validation: check citation URLs
-  const invalidCitations = citations.filter(
-    (c) => c === ("unknown" as CitationUrl) && String(c) !== "unknown",
-  );
-  if (invalidCitations.length > 0) {
-    issues.push(
-      `${invalidCitations.length} citations were invalid URLs (coerced to "unknown")`,
-    );
   }
 
   if (issues.length > 0) {

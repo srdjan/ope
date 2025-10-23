@@ -1,10 +1,16 @@
+import type {
+  MaxTokens,
+  SystemPrompt,
+  Temperature,
+  UserPrompt,
+} from "../lib/branded.ts";
 import type { Result } from "../lib/result.ts";
 
 export type GenerateArgs = {
-  readonly system: string;
-  readonly user: string;
-  readonly maxTokens: number;
-  readonly temperature: number;
+  readonly system: SystemPrompt;
+  readonly user: UserPrompt;
+  readonly maxTokens: MaxTokens;
+  readonly temperature: Temperature;
 };
 
 export type GenerateResult = { readonly text: string };
