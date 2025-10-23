@@ -157,6 +157,28 @@ Health check endpoint.
 
 **Response**: `200 OK` with body `"ok"`
 
+### `POST /shutdown`
+
+Graceful shutdown endpoint for development and CI/CD.
+
+**Response**: `200 OK` with JSON body:
+```json
+{
+  "message": "Server shutting down gracefully"
+}
+```
+
+**Behavior**:
+- Responds immediately before shutting down
+- Uses `queueMicrotask()` to schedule shutdown after response is sent
+- Performs graceful shutdown via `server.shutdown()` if available
+- Falls back to `Deno.exit(0)` if shutdown method not available
+
+**Example**:
+```bash
+curl -X POST http://localhost:8787/shutdown
+```
+
 ## Web UI
 
 The repository includes a static, server-rendered HTML page at

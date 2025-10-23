@@ -100,6 +100,28 @@ const handler = async (req: Request): Promise<Response> => {
       response = await serveIndex(logger);
     } else if (method === "GET" && path === "/health") {
       response = new Response("ok");
+    } else if (method === "POST" && path === "/shutdown") {
+      // Graceful shutdown endpoint
+      logger.info("Shutdown requested", { requestId });
+      response = new Response(
+        JSON.stringify({ message: "Server shutting down gracefully" }),
+        { status: 200, headers: JSON_HEADERS },
+      );
+
+      // Schedule shutdown after response is sent
+      // @ts-ignore - globalThis.__opeServer exists
+      const server = globalThis.__opeServer;
+      if (server && typeof server.shutdown === "function") {
+        queueMicrotask(() => {
+          logInfo("Initiating graceful shutdown");
+          server.shutdown();
+        });
+      } else {
+        logger.warn("Server shutdown not available - using process exit");
+        queueMicrotask(() => {
+          Deno.exit(0);
+        });
+      }
     } else {
       logger.warn("Route not found", { method, path });
       response = new Response("Not Found", { status: 404 });
@@ -136,8 +158,10 @@ const handler = async (req: Request): Promise<Response> => {
   }
 };
 
-if (isDeploy) {
-  Deno.serve(handler);
-} else {
-  Deno.serve({ port: PORT }, handler);
-}
+const server = isDeploy
+  ? Deno.serve(handler)
+  : Deno.serve({ port: PORT }, handler);
+
+// Store server reference for shutdown endpoint
+// @ts-ignore - server is available but may not be in type definitions
+globalThis.__opeServer = server;

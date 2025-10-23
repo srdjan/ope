@@ -282,7 +282,21 @@ response processing:
 High repair rates indicate prompt engineering issues or models not following
 JSON schema.
 
-Health check: `GET /health` → returns "ok"
+### Additional Endpoints
+
+- **Health check**: `GET /health` → returns "ok"
+- **Graceful shutdown**: `POST /shutdown` → shuts down server gracefully after responding
+
+**Shutdown endpoint usage:**
+```bash
+curl -X POST http://localhost:8787/shutdown
+```
+
+The shutdown endpoint:
+- Responds immediately with `{"message": "Server shutting down gracefully"}`
+- Schedules graceful server shutdown using `queueMicrotask()`
+- Ensures response is sent before shutdown begins
+- Useful for development and CI/CD pipelines
 
 ## Code Style Conventions
 

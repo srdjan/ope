@@ -3,6 +3,7 @@
   "tasks": {
     "dev": "deno run --allow-net --allow-env --allow-read --env-file=.env src/server.ts",
     "call": "deno run --allow-net --allow-env --env-file=.env scripts/call.ts",
+    "shutdown": "deno run --allow-net --allow-env --env-file=.env scripts/shutdown.ts",
     "gen:local": "deno task call '{\"rawPrompt\":\"Explain Raft in ~150 words\",\"taskType\":\"summarize\",\"targetHint\":\"local\"}'",
     "gen:cloud": "deno task call '{\"rawPrompt\":\"Extract company and role from: Jane Doe worked at ExampleCorp as Staff Engineer.\",\"taskType\":\"extract\"}'",
     "test": "deno test --env-file=.env -A",
