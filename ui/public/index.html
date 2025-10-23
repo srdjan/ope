@@ -279,10 +279,25 @@
           }
         };
 
-        const deriveAnswer = (payload) =>
-          payload && payload.output && typeof payload.output.answer === "string"
+        const deriveAnswer = (payload) => {
+          // Display only the enhanced user prompt (the actual prompt to send to LLM)
+          if (payload && payload.meta && payload.meta.compiled) {
+            const system = payload.meta.compiled.system || "";
+            const user = payload.meta.compiled.user || "";
+            // Combine system and user into a single enhanced prompt
+            if (system && user) {
+              return `${system}\n\n${user}`;
+            }
+            // If only user prompt exists
+            if (user) {
+              return user;
+            }
+          }
+          // Fallback to answer if compiled prompts not available
+          return payload && payload.output && typeof payload.output.answer === "string"
             ? payload.output.answer
             : "";
+        };
 
         const deriveErrorMessage = (payload, status) => {
           if (payload) {
