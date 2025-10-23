@@ -5,6 +5,8 @@ import { compileIR } from "../engine/compile.ts";
 import { route } from "../engine/route.ts";
 import { getValidationMetrics, validateOrRepair } from "../engine/validate.ts";
 import { config as envConfig, type ConfigPort } from "../config.ts";
+import type { ContextPort } from "../ports/context.ts";
+import { getContextPort } from "../contextConfig.ts";
 import { makePromptText } from "../lib/branded.ts";
 import { createRequestLogger, logStage } from "../lib/logger.ts";
 
@@ -12,6 +14,7 @@ export async function handleGenerate(
   body: unknown,
   requestId: string,
   cfg: ConfigPort = envConfig,
+  ctxPort?: ContextPort,
 ): Promise<Response> {
   const logger = createRequestLogger(requestId);
   logger.info("Pipeline starting");
@@ -36,6 +39,7 @@ export async function handleGenerate(
     rawPrompt: string;
     taskType?: "qa" | "extract" | "summarize";
     targetHint?: "local" | "cloud";
+    context?: string;
   };
 
   // Create properly typed request with branded types
@@ -43,7 +47,37 @@ export async function handleGenerate(
     rawPrompt: makePromptText(rawBody.rawPrompt),
     taskType: rawBody.taskType,
     targetHint: rawBody.targetHint,
+    context: rawBody.context,
   };
+
+  // Resolve context instruction (if provided)
+  let contextInstr = undefined;
+  if (request.context) {
+    // Get context port (lazy load if not injected)
+    const port = ctxPort ?? await getContextPort();
+    const ctx = port.getContext(request.context);
+
+    if (!ctx) {
+      // Unknown context - return 400 error
+      logger.error("Unknown context requested", { context: request.context });
+      return new Response(
+        JSON.stringify({
+          error: "Unknown context",
+          detail: `Context '${request.context}' not found. Available contexts: ${port.listContexts().join(", ")}`,
+        }),
+        {
+          status: 400,
+          headers: jsonHeaders,
+        },
+      );
+    }
+
+    contextInstr = ctx.instruction;
+    logger.info("Context applied", {
+      contextId: ctx.id,
+      contextName: ctx.name,
+    });
+  }
 
   // Stage 1: Analyze
   const analyzeEnd = logStage(logger, "analyze");
@@ -54,9 +88,9 @@ export async function handleGenerate(
     maxWords: analysis.maxWords,
   });
 
-  // Stage 2: Synthesize
+  // Stage 2: Synthesize (with context)
   const synthesizeEnd = logStage(logger, "synthesize");
-  const ir = synthesize(request.rawPrompt, analysis);
+  const ir = synthesize(request.rawPrompt, analysis, contextInstr);
   // Placeholder for future Ax/DSPy optimization:
   const ir2 = ir;
   synthesizeEnd({
@@ -65,9 +99,9 @@ export async function handleGenerate(
     styleCount: ir2.style.length,
   });
 
-  // Stage 3: Compile
+  // Stage 3: Compile (with context)
   const compileEnd = logStage(logger, "compile");
-  const compiled = compileIR(ir2, request.rawPrompt);
+  const compiled = compileIR(ir2, request.rawPrompt, contextInstr);
   compileEnd({
     systemPromptLength: compiled.system.length,
     userPromptLength: compiled.user.length,

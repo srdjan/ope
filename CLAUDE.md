@@ -167,6 +167,59 @@ Implementations:
 This enables **testable, swappable configuration** without modifying business
 logic.
 
+### Context System (Pluggable Instructions)
+
+OPE supports **pluggable context instructions** that customize LLM behavior for
+specific domains (medical, legal, code, academic, etc.) while keeping core
+logic pure.
+
+**Context Definition** ([contexts.md](contexts.md)):
+
+Contexts are defined in a markdown file with YAML-like structure:
+
+```yaml
+id: medical
+name: Medical Domain
+description: For medical and health-related queries
+instruction:
+  roleSuffix: in medical and health sciences
+  additionalConstraints:
+    - include medical disclaimer
+    - cite peer-reviewed medical sources
+  systemSuffix: |
+    IMPORTANT: Always include disclaimer about consulting healthcare professionals
+  temperatureOverride: 0.2
+  maxTokensOverride: 800
+```
+
+**Context Port** ([src/ports/context.ts](src/ports/context.ts)):
+
+- `ContextPort` interface for dependency injection
+- `makeContextPort()` creates port from parsed contexts
+- `validateContextInstruction()` validates instruction parameters
+- Loaded once at startup via `getContextPort()` singleton
+
+**Integration**:
+
+1. **Request** - Add optional `context` field to `GenerateRequest`
+2. **Synthesis** - `synthesize()` accepts `ContextInstruction` parameter
+3. **Compilation** - `compileIR()` applies context overrides
+4. **Routing** - Unknown contexts return 400 error with available list
+
+**Context Precedence**: Context instructions **override** taskType-based
+defaults.
+
+**Available Contexts** (see [contexts.md](contexts.md)):
+
+- `medical` - Medical/health queries with disclaimers
+- `legal` - Legal questions with jurisdiction awareness
+- `code` - Programming with lower temperature (0.1), code examples
+- `academic` - Scholarly rigor with citations
+- `business` - Business frameworks and practical advice
+- `educational` - Clear explanations with examples
+- `creative` - Higher temperature (0.8) for creative writing
+- `technical` - Technical documentation best practices
+
 ## API
 
 **Single Endpoint**: `POST /v1/generate`
@@ -177,9 +230,17 @@ Request body:
 {
   "rawPrompt": "Explain Raft consensus",
   "taskType": "summarize",
-  "targetHint": "local"
+  "targetHint": "local",
+  "context": "academic"
 }
 ```
+
+Fields:
+
+- `rawPrompt` (required): The user's input prompt
+- `taskType` (optional): "qa" | "extract" | "summarize"
+- `targetHint` (optional): "local" | "cloud"
+- `context` (optional): Context ID (e.g., "medical", "legal", "code")
 
 Response:
 

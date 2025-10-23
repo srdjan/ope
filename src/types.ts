@@ -12,6 +12,7 @@ export type GenerateRequest = {
   readonly rawPrompt: PromptText;
   readonly taskType?: "qa" | "extract" | "summarize";
   readonly targetHint?: "local" | "cloud";
+  readonly context?: string; // Context ID (e.g., "medical", "legal", "code")
 };
 
 export type PromptIR = {
