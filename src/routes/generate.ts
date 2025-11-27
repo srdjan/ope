@@ -112,6 +112,7 @@ export async function handleGenerate(
   const capabilities = {
     hasCloud: cfg.hasCloud(),
     hasLocalHttp: cfg.hasLocalHttp(),
+    isMockMode: cfg.isMockMode(),
   };
   const decision = route(capabilities, request.targetHint);
   routeEnd({
@@ -119,6 +120,7 @@ export async function handleGenerate(
     targetHint: request.targetHint,
     hasCloud: capabilities.hasCloud,
     hasLocalHttp: capabilities.hasLocalHttp,
+    isMockMode: capabilities.isMockMode,
   });
 
   // Stage 5: Adapter call

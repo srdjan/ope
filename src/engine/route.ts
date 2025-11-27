@@ -13,11 +13,19 @@ export type RouteDecision = {
 /**
  * Pure function to select appropriate adapter based on capabilities and target hint.
  * No side effects - config is passed as parameter for dependency injection.
+ *
+ * When mock mode is enabled (MOCK_AI !== "false"), always returns localEcho
+ * regardless of other configuration. This is the default behavior.
  */
 export function route(
   capabilities: AvailableCapabilities,
   targetHint?: "local" | "cloud",
 ): RouteDecision {
+  // Mock mode takes precedence - always use localEcho
+  if (capabilities.isMockMode) {
+    return { model: makeModelId("local/echo"), adapter: localEcho };
+  }
+
   if (targetHint === "local") {
     if (capabilities.hasLocalHttp) {
       return { model: makeModelId("local/http"), adapter: localHttp };

@@ -12,6 +12,7 @@ export interface ConfigPort {
 
   hasCloud(): boolean;
   hasLocalHttp(): boolean;
+  isMockMode(): boolean;
 }
 
 /**
@@ -19,12 +20,17 @@ export interface ConfigPort {
  * Reads from Deno.env and provides immutable config.
  */
 export const makeEnvConfig = (): ConfigPort => {
+  const mockAiEnv = Deno.env.get("MOCK_AI");
+  // Default to mock mode (true) unless explicitly set to "false"
+  const mockAi = mockAiEnv !== "false";
+
   const cfg = Object.freeze({
     port: Number(Deno.env.get("PORT") ?? 8787),
     cloudBaseUrl: Deno.env.get("CLOUD_BASE_URL") ?? "",
     cloudApiKey: Deno.env.get("CLOUD_API_KEY") ?? "",
     cloudModel: Deno.env.get("CLOUD_MODEL") ?? "gpt5-mini",
     llmBaseUrl: Deno.env.get("LLM_BASE_URL") ?? "",
+    mockAi,
   });
 
   return {
@@ -45,6 +51,7 @@ export const makeEnvConfig = (): ConfigPort => {
     },
     hasCloud: () => cfg.cloudBaseUrl.length > 0 && cfg.cloudApiKey.length > 0,
     hasLocalHttp: () => cfg.llmBaseUrl.length > 0,
+    isMockMode: () => cfg.mockAi,
   };
 };
 
@@ -59,6 +66,7 @@ export const makeTestConfig = (
     cloudApiKey: string;
     cloudModel: string;
     llmBaseUrl: string;
+    mockAi: boolean;
   }>,
 ): ConfigPort => {
   const cfg = Object.freeze({
@@ -67,6 +75,7 @@ export const makeTestConfig = (
     cloudApiKey: overrides.cloudApiKey ?? "",
     cloudModel: overrides.cloudModel ?? "gpt5-mini",
     llmBaseUrl: overrides.llmBaseUrl ?? "",
+    mockAi: overrides.mockAi ?? true,
   });
 
   return {
@@ -87,5 +96,6 @@ export const makeTestConfig = (
     },
     hasCloud: () => cfg.cloudBaseUrl.length > 0 && cfg.cloudApiKey.length > 0,
     hasLocalHttp: () => cfg.llmBaseUrl.length > 0,
+    isMockMode: () => cfg.mockAi,
   };
 };

@@ -34,11 +34,12 @@ deno task test:remote # Run remote smoke tests against deployed instance
 ```bash
 # Server configuration
 PORT=8787                                    # Server port (default: 8787)
+MOCK_AI=true                                 # Mock AI calls using localEcho (default: true)
 
-# Local HTTP LLM (optional)
+# Local HTTP LLM (optional, ignored when MOCK_AI=true)
 LLM_BASE_URL=http://127.0.0.1:11434/generate # Endpoint expecting {prompt, max_tokens, temperature}
 
-# Cloud API (optional)
+# Cloud API (optional, ignored when MOCK_AI=true)
 CLOUD_BASE_URL=https://api.openai.com        # OpenAI-compatible base URL
 CLOUD_API_KEY=sk-...                         # API key
 CLOUD_MODEL=gpt5-mini                        # Model name (default: gpt5-mini)
@@ -46,6 +47,10 @@ CLOUD_MODEL=gpt5-mini                        # Model name (default: gpt5-mini)
 # Client configuration
 OPE_HOST=http://127.0.0.1:8787              # Override target host in scripts/call.ts
 ```
+
+**Mock Mode**: By default, `MOCK_AI=true` forces all adapter calls to use
+`localEcho`, which returns a formatted echo of the prompts without calling any
+external AI service. Set `MOCK_AI=false` to enable real AI model calls.
 
 All `deno task …` commands use `--env-file=.env`, so populate the root `.env`
 once and restart the relevant task to apply changes.

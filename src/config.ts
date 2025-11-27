@@ -18,5 +18,9 @@ export function hasLocalHttp(): boolean {
   return config.hasLocalHttp();
 }
 
+export function isMockMode(): boolean {
+  return config.isMockMode();
+}
+
 // Export config port for advanced usage
 export { config, type ConfigPort };

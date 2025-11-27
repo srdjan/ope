@@ -69,4 +69,5 @@ export type FinalResponse = {
 export type AvailableCapabilities = {
   readonly hasCloud: boolean;
   readonly hasLocalHttp: boolean;
+  readonly isMockMode: boolean;
 };
