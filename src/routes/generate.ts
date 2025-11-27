@@ -1,8 +1,9 @@
-import type { FinalResponse, GenerateRequest } from "../types.ts";
+import type { EnhanceMode, FinalResponse, GenerateRequest } from "../types.ts";
 import { analyze } from "../engine/analyze.ts";
 import { synthesize } from "../engine/synthesize.ts";
 import { compileIR } from "../engine/compile.ts";
 import { route } from "../engine/route.ts";
+import { enhancePrompt } from "../engine/enhance.ts";
 import { getValidationMetrics, validateOrRepair } from "../engine/validate.ts";
 import { config as envConfig, type ConfigPort } from "../config.ts";
 import type { ContextPort } from "../ports/context.ts";
@@ -38,6 +39,7 @@ export async function handleGenerate(
     taskType?: "qa" | "extract" | "summarize";
     targetHint?: "local" | "cloud";
     context?: string;
+    enhance?: EnhanceMode;
   };
 
   // Create properly typed request with branded types
@@ -46,6 +48,7 @@ export async function handleGenerate(
     taskType: rawBody.taskType,
     targetHint: rawBody.targetHint,
     context: rawBody.context,
+    enhance: rawBody.enhance,
   };
 
   // Resolve context instruction (if provided)
@@ -77,29 +80,62 @@ export async function handleGenerate(
     });
   }
 
-  // Stage 1: Analyze
+  // Stage 0: Enhance (NEW - runs before analyze)
+  const enhanceEnd = logStage(logger, "enhance");
+  const enhanceMode = request.enhance ?? "rules"; // Default to rules-based enhancement
+  const enhancement = enhancePrompt(request.rawPrompt, enhanceMode);
+  enhanceEnd({
+    mode: enhanceMode,
+    detectedDomain: enhancement.analysis.detectedDomain,
+    enhancementsApplied: enhancement.enhancementsApplied.length,
+    ambiguityScore: enhancement.analysis.ambiguityScore,
+  });
+
+  // Auto-apply detected domain as context if none specified
+  let effectiveContext = request.context;
+  if (!effectiveContext && enhancement.analysis.detectedDomain) {
+    // Get context port (lazy load if not injected)
+    const port = ctxPort ?? await getContextPort();
+    const detectedCtx = port.getContext(enhancement.analysis.detectedDomain);
+    if (detectedCtx) {
+      effectiveContext = detectedCtx.id;
+      contextInstr = detectedCtx.instruction;
+      logger.info("Auto-detected context applied", {
+        contextId: detectedCtx.id,
+        contextName: detectedCtx.name,
+      });
+    }
+  }
+
+  // Stage 1: Analyze (with enhanced prompt analysis)
   const analyzeEnd = logStage(logger, "analyze");
-  const analysis = analyze(request);
+  const analysis = analyze(request, enhancement.analysis);
   analyzeEnd({
     needsJson: analysis.needsJson,
     needsCitations: analysis.needsCitations,
     maxWords: analysis.maxWords,
   });
 
-  // Stage 2: Synthesize (with context)
+  // Stage 2: Synthesize (with context and suggested examples from enhancement)
   const synthesizeEnd = logStage(logger, "synthesize");
-  const ir = synthesize(request.rawPrompt, analysis, contextInstr);
+  const ir = synthesize(
+    enhancement.enhancedPrompt,
+    analysis,
+    contextInstr,
+    enhancement.analysis.suggestedExamples,
+  );
   // Placeholder for future Ax/DSPy optimization:
   const ir2 = ir;
   synthesizeEnd({
     role: ir2.role,
     constraintsCount: ir2.constraints.length,
     styleCount: ir2.style.length,
+    examplesCount: ir2.examples.length,
   });
 
-  // Stage 3: Compile (with context)
+  // Stage 3: Compile (with context and enhanced prompt)
   const compileEnd = logStage(logger, "compile");
-  const compiled = compileIR(ir2, request.rawPrompt, contextInstr);
+  const compiled = compileIR(ir2, enhancement.enhancedPrompt, contextInstr);
   compileEnd({
     systemPromptLength: compiled.system.length,
     userPromptLength: compiled.user.length,
@@ -175,6 +211,10 @@ export async function handleGenerate(
     });
   }
 
+  // Build result with optional enhancement metadata
+  // Only include enhancement when enhancements were actually applied
+  const hasEnhancements = enhancement.enhancementsApplied.length > 0;
+
   const result: FinalResponse = {
     output: validationResult.value,
     meta: {
@@ -183,6 +223,7 @@ export async function handleGenerate(
       compiled: { system: compiled.system, user: compiled.user },
       decoding: compiled.decoding,
       validation: validationMetrics,
+      ...(hasEnhancements ? { enhancement } : {}),
     },
   };
 
@@ -190,6 +231,7 @@ export async function handleGenerate(
     answerLength: result.output.answer.length,
     citationsCount: result.output.citations.length,
     wasRepaired: validationMetrics.wasRepaired,
+    enhancementsApplied: enhancement.enhancementsApplied.length,
   });
 
   return new Response(JSON.stringify(result, null, 2), {

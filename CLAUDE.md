@@ -63,17 +63,19 @@ The system implements a **functional pipeline** where each stage transforms data
 immutably:
 
 ```
-GenerateRequest → AnalysisReport → PromptIR → CompiledPrompt → RouteDecision → Generated Text → Validated Output
+GenerateRequest → EnhancementResult → AnalysisReport → PromptIR → CompiledPrompt → RouteDecision → Generated Text → Validated Output
 ```
 
 **Entry Point**: [src/routes/generate.ts](src/routes/generate.ts) orchestrates
 the entire pipeline:
 
+0. **enhance** ([src/engine/enhance.ts](src/engine/enhance.ts)) - Analyzes and
+   enhances the raw prompt (domain detection, compound questions, clarity)
 1. **analyze** ([src/engine/analyze.ts](src/engine/analyze.ts)) - Examines
    request to determine JSON needs, citations, word limits based on taskType
 2. **synthesize** ([src/engine/synthesize.ts](src/engine/synthesize.ts)) -
    Creates intermediate representation (PromptIR) with role, objective,
-   constraints, style, steps
+   constraints, style, steps, and examples from enhancement
 3. **compileIR** ([src/engine/compile.ts](src/engine/compile.ts)) - Converts IR
    into system/user prompts with decoding parameters
 4. **route** ([src/engine/route.ts](src/engine/route.ts)) - Selects appropriate
@@ -82,6 +84,38 @@ the entire pipeline:
    local HTTP, or OpenAI-style cloud)
 6. **validateOrRepair** ([src/engine/validate.ts](src/engine/validate.ts)) -
    Ensures output conforms to `{answer, citations}` schema
+
+### Prompt Enhancement System
+
+The enhancement stage ([src/engine/enhance.ts](src/engine/enhance.ts)) performs
+**rule-based prompt analysis and enhancement** before processing:
+
+**Enhancement Types:**
+
+1. **Domain Detection** - Auto-detects context (medical, code, legal, academic,
+   etc.) from keywords/patterns and applies corresponding context instructions
+2. **Compound Question Structuring** - Breaks multi-part questions into numbered
+   steps for clearer LLM processing
+3. **Clarity Analysis** - Scores prompt ambiguity (0-1) and flags vague prompts
+   like "fix it" or "explain this"
+4. **Examples Population** - Suggests few-shot examples based on detected domain
+   to populate the previously-empty `PromptIR.examples` field
+
+**Pattern Files:**
+
+- [src/lib/patterns.ts](src/lib/patterns.ts) - Domain keywords, compound question
+  patterns, vague term detectors, and domain-specific examples
+
+**Configuration:**
+
+- `enhance: "rules"` (default) - Apply rule-based enhancements
+- `enhance: "none"` - Skip enhancement, pass raw prompt through
+
+**Auto-Context Detection:**
+
+When no `context` is specified in the request but a domain is detected (e.g.,
+medical keywords found), the system automatically applies the corresponding
+context from [contexts.md](contexts.md).
 
 ### Adapter Pattern
 
@@ -239,7 +273,8 @@ Request body:
   "rawPrompt": "Explain Raft consensus",
   "taskType": "summarize",
   "targetHint": "local",
-  "context": "academic"
+  "context": "academic",
+  "enhance": "rules"
 }
 ```
 
@@ -249,6 +284,7 @@ Fields:
 - `taskType` (optional): "qa" | "extract" | "summarize"
 - `targetHint` (optional): "local" | "cloud"
 - `context` (optional): Context ID (e.g., "medical", "legal", "code")
+- `enhance` (optional): "none" | "rules" (default: "rules")
 
 Response:
 
@@ -267,10 +303,19 @@ Response:
       "wasRepaired": false,
       "errorKind": null,
       "errorDetail": null
+    },
+    "enhancement": {
+      "originalPrompt": "...",
+      "enhancedPrompt": "...",
+      "analysis": { "detectedDomain": "medical", "isCompoundQuestion": false, ... },
+      "enhancementsApplied": ["domain_detected:medical", "examples_suggested"]
     }
   }
 }
 ```
+
+**Note**: The `enhancement` field is only present when enhancements were actually
+applied (i.e., `enhancementsApplied.length > 0`).
 
 **Validation Tracking**: The `validation` field provides transparency about
 response processing:

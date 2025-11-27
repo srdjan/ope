@@ -26,6 +26,14 @@ export function compileIR(
     `STEPS: ${ir.steps.join(" -> ")}`,
   ].join("\n");
 
+  // Add examples for few-shot learning if provided (from enhancement)
+  if (ir.examples.length > 0) {
+    const examplesText = ir.examples
+      .map((ex, i) => `Example ${i + 1}:\nUser: ${ex.user}\nAssistant: ${ex.assistant}`)
+      .join("\n\n");
+    systemText += `\n\nEXAMPLES:\n${examplesText}`;
+  }
+
   // Append context-specific system suffix if provided
   if (contextInstr?.systemSuffix) {
     systemText += `\n\n${contextInstr.systemSuffix}`;
