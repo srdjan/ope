@@ -486,7 +486,7 @@ OPE implements structured logging throughout the pipeline
 **Response headers**: Every response includes `x-request-id` header for
 correlation.
 
-See [LOGGING.md](LOGGING.md) for comprehensive logging documentation and
+See [LOGGING.md](docs/LOGGING.md) for comprehensive logging documentation and
 debugging tips.
 
 ## Common Gotchas

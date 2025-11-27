@@ -47,7 +47,7 @@ Example:
 
 ## Request Flow Logging
 
-### 1. Server Layer ([src/server.ts](src/server.ts))
+### 1. Server Layer ([src/server.ts](../src/server.ts))
 
 **Server Startup:**
 ```
@@ -83,7 +83,7 @@ INFO: Request completed {
 }
 ```
 
-### 2. Pipeline Orchestration ([src/routes/generate.ts](src/routes/generate.ts))
+### 2. Pipeline Orchestration ([src/routes/generate.ts](../src/routes/generate.ts))
 
 **Pipeline Start:**
 ```
@@ -199,7 +199,7 @@ INFO: Pipeline completed successfully {
 
 ### 3. Adapter Layer
 
-#### localEcho ([src/adapters/localEcho.ts](src/adapters/localEcho.ts))
+#### localEcho ([src/adapters/localEcho.ts](../src/adapters/localEcho.ts))
 ```
 INFO: localEcho adapter called {
   "adapter":"localEcho",
@@ -215,7 +215,7 @@ INFO: localEcho response generated {
 }
 ```
 
-#### localHttp ([src/adapters/localHttp.ts](src/adapters/localHttp.ts))
+#### localHttp ([src/adapters/localHttp.ts](../src/adapters/localHttp.ts))
 ```
 INFO: localHttp adapter called {
   "adapter":"localHttp",
@@ -242,7 +242,7 @@ ERROR: localHttp: HTTP error response {
 }
 ```
 
-#### openaiStyle ([src/adapters/openaiStyle.ts](src/adapters/openaiStyle.ts))
+#### openaiStyle ([src/adapters/openaiStyle.ts](../src/adapters/openaiStyle.ts))
 ```
 INFO: openaiStyle adapter called {
   "adapter":"openaiStyle",
@@ -306,7 +306,7 @@ x-request-id: c1767f5b-e7e4-46f2-bb9e-6d70873006e6
 
 ## Remote Test Logging
 
-The remote test suite ([test/remote.smoke.test.ts](test/remote.smoke.test.ts)) includes detailed logging:
+The remote test suite ([test/remote.smoke.test.ts](../test/remote.smoke.test.ts)) includes detailed logging:
 
 **Request Starting:**
 ```
@@ -467,8 +467,8 @@ grep "abc-123" ope.log
 
 ## Related Files
 
-- [src/lib/logger.ts](src/lib/logger.ts) - Logging utility functions
-- [src/server.ts](src/server.ts) - HTTP server with request/response logging
-- [src/routes/generate.ts](src/routes/generate.ts) - Pipeline orchestration logging
-- [src/adapters/](src/adapters/) - Adapter-specific logging
-- [test/remote.smoke.test.ts](test/remote.smoke.test.ts) - Test logging examples
+- [src/lib/logger.ts](../src/lib/logger.ts) - Logging utility functions
+- [src/server.ts](../src/server.ts) - HTTP server with request/response logging
+- [src/routes/generate.ts](../src/routes/generate.ts) - Pipeline orchestration logging
+- [src/adapters/](../src/adapters) - Adapter-specific logging
+- [test/remote.smoke.test.ts](../test/remote.smoke.test.ts) - Test logging examples

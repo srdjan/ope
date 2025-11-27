@@ -1,8 +1,8 @@
 # OPE — Online Prompt Enhancer (Model-Agnostic, Deno)
 
-An end-to-end minimal implementation of the **Online Prompt Enhancer**: analyze
-→ synthesize Prompt IR → compile → **route to local/cloud model** → generate →
-validate JSON.
+An end-to-end implementation of the **Online Prompt Enhancer**: **enhance** →
+analyze → synthesize Prompt IR → compile → **route to local/cloud model** →
+generate → validate JSON.
 
 - Runtime: **Deno 2.x**
 - Style: **Light Functional TypeScript** (no classes, Result types, immutable
@@ -13,18 +13,23 @@ validate JSON.
 - Client: **Deno task** (`scripts/call.ts`)
 - UI: **Static HTMX page** at `/` for interactive prompt enhancement
 - Models supported:
-  - `local/echo` (no deps; deterministic)
+  - `local/echo` (no deps; deterministic) — **default in mock mode**
   - `local/http` (POST to `LLM_BASE_URL` expecting `{ text: string }`)
   - `cloud/openai-style` (POST to OpenAI-compatible `/v1/chat/completions`)
 
 ## ✨ Key Features
 
+- **Rule-Based Prompt Enhancement**: Auto-detects domain (medical, code, legal,
+  academic, etc.), structures compound questions, improves clarity, and adds
+  few-shot examples
 - **Type-Safe Pipeline**: Branded types prevent mixing up temperatures, tokens,
   and prompts
 - **Validation Tracking**: Every response includes detailed validation metrics
 - **Result Types**: All adapters return `Result<T, E>` instead of throwing
   exceptions
 - **Testable Config**: Port pattern enables dependency injection for testing
+- **Mock Mode**: Default behavior uses local echo adapter for development (set
+  `MOCK_AI=false` to use real models)
 - **Immutable Data**: All types use `readonly` for safety
 - **Built-in Web UI**: Minimal, responsive page with loading states and
   copy-to-clipboard for enhanced prompts
@@ -62,11 +67,12 @@ All `deno task …` commands are configured to load environment variables from
 ```bash
 # Server
 PORT=8787                                    # Server port (default: 8787)
+MOCK_AI=true                                 # Mock mode (default: true). Set to "false" to use real models
 
-# Local HTTP LLM (optional)
+# Local HTTP LLM (optional, requires MOCK_AI=false)
 LLM_BASE_URL=http://127.0.0.1:11434/generate # Local model endpoint
 
-# Cloud API (optional - OpenAI compatible)
+# Cloud API (optional - OpenAI compatible, requires MOCK_AI=false)
 CLOUD_BASE_URL=https://api.openai.com        # API base URL
 CLOUD_API_KEY=sk-...                         # API key
 CLOUD_MODEL=gpt5-mini                        # Model name (default: gpt5-mini)
@@ -96,8 +102,10 @@ Generate an optimized response using the prompt enhancement pipeline.
 ```json
 {
   "rawPrompt": "Explain Raft consensus in ~150 words",
-  "taskType": "summarize", // Optional: "qa" | "extract" | "summarize"
-  "targetHint": "local" // Optional: "local" | "cloud"
+  "taskType": "summarize",   // Optional: "qa" | "extract" | "summarize"
+  "targetHint": "local",     // Optional: "local" | "cloud"
+  "context": "academic",     // Optional: context ID (medical, legal, code, etc.)
+  "enhance": "rules"         // Optional: "rules" (default) | "none"
 }
 ```
 
@@ -113,15 +121,15 @@ Generate an optimized response using the prompt enhancement pipeline.
     "model": "local/echo",
     "ir": {
       "role": "precise expert",
-      "objective": "Answer the user's request accurately and concisely.",
+      "objective": "Answer about Raft consensus accurately and concisely.",
       "constraints": ["json-only", "cite-or-say-unknown", "120-160-words"],
       "style": ["succinct", "use table only if clearly useful"],
       "steps": ["analyze", "answer"],
       "outputSchema": { "answer": "string", "citations": "string[]" },
-      "examples": []
+      "examples": [{ "user": "...", "assistant": "..." }]
     },
     "compiled": {
-      "system": "ROLE: precise expert\nOBJECTIVE: ...",
+      "system": "ROLE: precise expert\nOBJECTIVE: ...\n\nEXAMPLES:\n...",
       "user": "TASK:\n..."
     },
     "decoding": {
@@ -132,10 +140,24 @@ Generate an optimized response using the prompt enhancement pipeline.
       "wasRepaired": false,
       "errorKind": null,
       "errorDetail": null
+    },
+    "enhancement": {
+      "originalPrompt": "Explain Raft consensus in ~150 words",
+      "enhancedPrompt": "Explain Raft consensus in ~150 words",
+      "analysis": {
+        "detectedDomain": "academic",
+        "isCompoundQuestion": false,
+        "ambiguityScore": 0.1,
+        "suggestedExamples": []
+      },
+      "enhancementsApplied": ["domain_detected:academic"]
     }
   }
 }
 ```
+
+**Note**: The `enhancement` field only appears when enhancements were actually
+applied.
 
 **Validation Tracking**:
 
@@ -205,17 +227,32 @@ tweaks instantaneous.
 ### Pipeline Flow
 
 ```
-GenerateRequest → analyze → synthesize → compile → route → adapter → validate → FinalResponse
+GenerateRequest → enhance → analyze → synthesize → compile → route → adapter → validate → FinalResponse
 ```
 
-1. **analyze** - Examines request to determine JSON needs, citations, word
-   limits
-2. **synthesize** - Creates Prompt IR with role, objective, constraints, style,
-   steps
-3. **compile** - Converts IR into system/user prompts with decoding parameters
-4. **route** - Selects adapter (echo/http/cloud) based on targetHint and config
-5. **adapter** - Calls the model and returns `Result<Text, AdapterError>`
-6. **validate** - Validates/repairs response, tracks any issues
+1. **enhance** - Analyzes prompt for domain detection, compound questions,
+   ambiguity; applies rule-based enhancements; suggests few-shot examples
+2. **analyze** - Examines request to determine JSON needs, citations, word
+   limits (adjusted by prompt complexity)
+3. **synthesize** - Creates Prompt IR with role, objective, constraints, style,
+   steps, and examples from enhancement
+4. **compile** - Converts IR into system/user prompts with decoding parameters;
+   includes examples for few-shot learning
+5. **route** - Selects adapter (echo/http/cloud) based on targetHint and config
+6. **adapter** - Calls the model and returns `Result<Text, AdapterError>`
+7. **validate** - Validates/repairs response, tracks any issues
+
+### Enhancement Features
+
+The enhancement stage provides:
+
+- **Domain Detection**: Auto-detects medical, legal, code, academic, business,
+  educational, creative, or technical domains from keywords and patterns
+- **Auto-Context**: Applies detected domain as context if none specified
+- **Compound Question Structuring**: Breaks multi-part questions into numbered
+  steps
+- **Clarity Improvement**: Flags vague prompts with clarification notes
+- **Few-Shot Examples**: Populates `PromptIR.examples` based on detected domain
 
 ## Development
 
