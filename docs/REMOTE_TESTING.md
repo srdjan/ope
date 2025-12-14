@@ -40,31 +40,40 @@ OPE_HOST=https://staging.ope.example.com deno test --allow-net --allow-env test/
 The remote smoke test suite validates:
 
 ### Core Functionality
+
 - **Health Check**: `/health` endpoint returns "ok"
-- **Basic Generation**: `/v1/generate` accepts requests and returns valid responses
+- **Basic Generation**: `/v1/generate` accepts requests and returns valid
+  responses
 - **Response Structure**: Output contains `answer` and `citations`
-- **Metadata**: Response includes `model`, `ir`, `compiled`, and `decoding` metadata
+- **Metadata**: Response includes `model`, `ir`, `compiled`, and `decoding`
+  metadata
 
 ### Task Types
+
 - **QA**: Question-answering tasks produce substantial answers
 - **Extract**: Information extraction from text
 - **Summarize**: Summarization with word limit constraints
 
 ### Routing
+
 - **Local Target**: `targetHint: "local"` routes to local adapters
-- **Cloud Target**: `targetHint: "cloud"` routes to cloud adapters (if configured)
+- **Cloud Target**: `targetHint: "cloud"` routes to cloud adapters (if
+  configured)
 
 ### IR (Intermediate Representation)
+
 - **Synthesis**: Produces `role`, `objective`, `constraints`, `style`
 - **Compilation**: Generates `system` and `user` prompts
 - **Decoding**: Sets appropriate `temperature` and `maxTokens`
 
 ### Error Handling
+
 - **Empty Prompts**: Handles empty or invalid prompts gracefully
 - **Invalid JSON**: Handles malformed request bodies
 - **Resource Management**: No memory leaks or hanging connections
 
 ### Performance
+
 - **Response Time**: Requests complete within 30 seconds
 - **Concurrency**: Handles multiple simultaneous requests
 
@@ -98,12 +107,14 @@ ok | 15 passed | 0 failed (2s)
 You can also test the remote instance manually:
 
 ### Health Check
+
 ```bash
 curl https://ope.timok.deno.net/health
 # Expected: "ok"
 ```
 
 ### Generate Request
+
 ```bash
 curl -X POST https://ope.timok.deno.net/v1/generate \
   -H "Content-Type: application/json" \
@@ -114,6 +125,7 @@ curl -X POST https://ope.timok.deno.net/v1/generate \
 ```
 
 ### With Task Type and Target Hint
+
 ```bash
 curl -X POST https://ope.timok.deno.net/v1/generate \
   -H "Content-Type: application/json" \
@@ -162,7 +174,8 @@ You can integrate remote testing into your CI/CD pipeline:
 
 ## Authentication
 
-**Note**: The current OPE implementation does not include authentication at the server level. If your deployment requires authentication, you would need to:
+**Note**: The current OPE implementation does not include authentication at the
+server level. If your deployment requires authentication, you would need to:
 
 1. Add authentication middleware to the server
 2. Modify the test suite to include auth headers
@@ -186,16 +199,19 @@ const response = await fetch(`${OPE_HOST}/v1/generate`, {
 ### Test Failures
 
 **Connection Errors**:
+
 - Verify the remote host is accessible: `curl https://your-host.com/health`
 - Check for network/firewall issues
 - Ensure the URL includes the protocol (`https://`)
 
 **Timeout Errors**:
+
 - The remote instance may be slow or overloaded
 - Check response time test (should be < 30s)
 - Consider increasing timeout in test configuration
 
 **Invalid Response Structure**:
+
 - The remote instance may be running a different version
 - Check the deployed version matches test expectations
 - Review API response format
@@ -203,20 +219,21 @@ const response = await fetch(`${OPE_HOST}/v1/generate`, {
 ### Performance Issues
 
 If tests are slow:
+
 - Check network latency to remote host
 - Monitor server load on remote instance
 - Consider running tests from closer geographic location
 
 ## Test Coverage Summary
 
-| Category | Tests | Coverage |
-|----------|-------|----------|
-| Endpoints | 2 | Health, Generate |
-| Task Types | 3 | QA, Extract, Summarize |
-| Routing | 1 | Local target hint |
-| Validation | 5 | Structure, IR, Compilation, Citations, Decoding |
-| Error Handling | 2 | Empty prompt, Invalid JSON |
-| Performance | 2 | Response time, Concurrency |
+| Category       | Tests | Coverage                                        |
+| -------------- | ----- | ----------------------------------------------- |
+| Endpoints      | 2     | Health, Generate                                |
+| Task Types     | 3     | QA, Extract, Summarize                          |
+| Routing        | 1     | Local target hint                               |
+| Validation     | 5     | Structure, IR, Compilation, Citations, Decoding |
+| Error Handling | 2     | Empty prompt, Invalid JSON                      |
+| Performance    | 2     | Response time, Concurrency                      |
 
 **Total**: 15 comprehensive smoke tests
 
@@ -230,5 +247,3 @@ After running remote tests:
 4. Test with production-like payloads
 5. Monitor error handling behavior
 6. Validate concurrent request handling
-
-

@@ -4,11 +4,11 @@
 
 import { parseContextsFile } from "./lib/contextParser.ts";
 import {
+  type ContextPort,
   makeContextPort,
   validateContextInstruction,
-  type ContextPort,
 } from "./ports/context.ts";
-import { logInfo, logWarn, logError } from "./lib/logger.ts";
+import { logError, logInfo, logWarn } from "./lib/logger.ts";
 
 const CONTEXTS_FILE = "./contexts.md";
 

@@ -1,10 +1,13 @@
 # OPE Logging and Observability Guide
 
-This document explains the comprehensive logging system implemented in OPE for debugging production issues and understanding request flow.
+This document explains the comprehensive logging system implemented in OPE for
+debugging production issues and understanding request flow.
 
 ## Overview
 
-OPE implements structured logging throughout the entire request/response pipeline with:
+OPE implements structured logging throughout the entire request/response
+pipeline with:
+
 - Request ID tracking for tracing individual requests
 - ISO 8601 timestamps on all log entries
 - Log levels (INFO, WARN, ERROR)
@@ -14,20 +17,26 @@ OPE implements structured logging throughout the entire request/response pipelin
 ## Log Levels
 
 ### INFO
+
 Normal operational messages showing request flow and successful operations:
+
 - Server startup
 - Request received/completed
 - Pipeline stage completions
 - Adapter calls and responses
 
 ### WARN
+
 Warning conditions that don't prevent operation but indicate potential issues:
+
 - Response validation repairs (e.g., invalid JSON from model)
 - Fallback to echo adapter
 - Configuration issues in non-critical paths
 
 ### ERROR
+
 Error conditions that prevent normal operation:
+
 - Request parsing failures
 - Missing required configuration
 - Adapter failures (network errors, invalid responses)
@@ -36,11 +45,13 @@ Error conditions that prevent normal operation:
 ## Log Format
 
 All logs follow this format:
+
 ```
 [TIMESTAMP] LEVEL: message {"context":"data"}
 ```
 
 Example:
+
 ```
 [2025-10-23T12:11:16.594Z] INFO: Pipeline starting {"requestId":"c1767f5b-e7e4-46f2-bb9e-6d70873006e6"}
 ```
@@ -50,11 +61,13 @@ Example:
 ### 1. Server Layer ([src/server.ts](../src/server.ts))
 
 **Server Startup:**
+
 ```
 INFO: Server starting {"port":8787,"env":"production"}
 ```
 
 **Request Received:**
+
 ```
 INFO: Request received {
   "method":"POST",
@@ -65,6 +78,7 @@ INFO: Request received {
 ```
 
 **Request Body Parsed:**
+
 ```
 INFO: Request body parsed {
   "rawPromptLength":45,
@@ -75,6 +89,7 @@ INFO: Request body parsed {
 ```
 
 **Request Completed:**
+
 ```
 INFO: Request completed {
   "status":200,
@@ -86,12 +101,13 @@ INFO: Request completed {
 ### 2. Pipeline Orchestration ([src/routes/generate.ts](../src/routes/generate.ts))
 
 **Pipeline Start:**
+
 ```
 INFO: Pipeline starting {"requestId":"abc-123"}
 ```
 
-**Stage Pattern:**
-Each stage logs start and completion:
+**Stage Pattern:** Each stage logs start and completion:
+
 ```
 INFO: Starting {stage} stage {"requestId":"abc-123"}
 INFO: Completed {stage} stage {
@@ -103,6 +119,7 @@ INFO: Completed {stage} stage {
 ```
 
 **Analyze Stage:**
+
 ```
 INFO: Completed analyze stage {
   "needsJson":true,
@@ -115,6 +132,7 @@ INFO: Completed analyze stage {
 ```
 
 **Synthesize Stage:**
+
 ```
 INFO: Completed synthesize stage {
   "role":"precise expert",
@@ -127,6 +145,7 @@ INFO: Completed synthesize stage {
 ```
 
 **Compile Stage:**
+
 ```
 INFO: Completed compile stage {
   "systemPromptLength":217,
@@ -140,6 +159,7 @@ INFO: Completed compile stage {
 ```
 
 **Route Stage:**
+
 ```
 INFO: Completed route stage {
   "model":"local/echo",
@@ -153,6 +173,7 @@ INFO: Completed route stage {
 ```
 
 **Adapter Stage:**
+
 ```
 INFO: Calling adapter {
   "model":"local/echo",
@@ -171,6 +192,7 @@ INFO: Completed adapter stage {
 ```
 
 **Validation Stage:**
+
 ```
 INFO: Completed validate stage {
   "wasRepaired":true,
@@ -188,6 +210,7 @@ WARN: Response required repair {
 ```
 
 **Pipeline Completion:**
+
 ```
 INFO: Pipeline completed successfully {
   "answerLength":362,
@@ -200,6 +223,7 @@ INFO: Pipeline completed successfully {
 ### 3. Adapter Layer
 
 #### localEcho ([src/adapters/localEcho.ts](../src/adapters/localEcho.ts))
+
 ```
 INFO: localEcho adapter called {
   "adapter":"localEcho",
@@ -216,6 +240,7 @@ INFO: localEcho response generated {
 ```
 
 #### localHttp ([src/adapters/localHttp.ts](../src/adapters/localHttp.ts))
+
 ```
 INFO: localHttp adapter called {
   "adapter":"localHttp",
@@ -233,6 +258,7 @@ INFO: localHttp response received {
 ```
 
 **Error Case:**
+
 ```
 ERROR: localHttp: HTTP error response {
   "adapter":"localHttp",
@@ -243,6 +269,7 @@ ERROR: localHttp: HTTP error response {
 ```
 
 #### openaiStyle ([src/adapters/openaiStyle.ts](../src/adapters/openaiStyle.ts))
+
 ```
 INFO: openaiStyle adapter called {
   "adapter":"openaiStyle",
@@ -266,16 +293,19 @@ INFO: openaiStyle response received {
 ## Error Scenarios
 
 ### Invalid Request
+
 ```
 ERROR: Invalid request: missing or empty rawPrompt {"requestId":"abc-123"}
 ```
 
 ### Configuration Missing
+
 ```
 ERROR: localHttp: LLM_BASE_URL not configured
 ```
 
 ### Adapter Failure
+
 ```
 ERROR: Adapter call failed {
   "errorKind":"NETWORK_ERROR",
@@ -285,6 +315,7 @@ ERROR: Adapter call failed {
 ```
 
 ### Unhandled Server Error
+
 ```
 ERROR: Unhandled server error {
   "error":{
@@ -300,15 +331,19 @@ ERROR: Unhandled server error {
 ## Response Headers
 
 Every response includes an `x-request-id` header for correlation:
+
 ```
 x-request-id: c1767f5b-e7e4-46f2-bb9e-6d70873006e6
 ```
 
 ## Remote Test Logging
 
-The remote test suite ([test/remote.smoke.test.ts](../test/remote.smoke.test.ts)) includes detailed logging:
+The remote test suite
+([test/remote.smoke.test.ts](../test/remote.smoke.test.ts)) includes detailed
+logging:
 
 **Request Starting:**
+
 ```
 [2025-10-23T12:11:16.590Z] [BasicGeneration] Request starting
 {
@@ -321,6 +356,7 @@ The remote test suite ([test/remote.smoke.test.ts](../test/remote.smoke.test.ts)
 ```
 
 **Response Received:**
+
 ```
 [2025-10-23T12:11:16.735Z] [BasicGeneration] Response received
 {
@@ -335,6 +371,7 @@ The remote test suite ([test/remote.smoke.test.ts](../test/remote.smoke.test.ts)
 ```
 
 **Response Summary:**
+
 ```
 [2025-10-23T12:11:16.738Z] [BasicGeneration] Response body summary
 {
@@ -349,6 +386,7 @@ The remote test suite ([test/remote.smoke.test.ts](../test/remote.smoke.test.ts)
 ### Verbose Mode
 
 Set `VERBOSE=true` to see full response bodies in tests:
+
 ```bash
 VERBOSE=true deno task test:remote
 ```
@@ -359,9 +397,11 @@ This will output complete response JSON for detailed debugging.
 
 ### Viewing Logs
 
-Logs are written to stdout/stderr and can be collected by your deployment platform:
+Logs are written to stdout/stderr and can be collected by your deployment
+platform:
 
 **Deno Deploy:**
+
 ```bash
 # View logs in Deno Deploy dashboard
 # or use CLI
@@ -369,6 +409,7 @@ deno deploy logs
 ```
 
 **Local Development:**
+
 ```bash
 # Run server and pipe to file
 deno task dev 2>&1 | tee ope.log
@@ -380,17 +421,20 @@ tail -f ope.log
 ### Filtering Logs
 
 **By request ID:**
+
 ```bash
 grep "abc-123" ope.log
 ```
 
 **By log level:**
+
 ```bash
 grep "ERROR:" ope.log
 grep "WARN:" ope.log
 ```
 
 **By stage:**
+
 ```bash
 grep "stage\":\"analyze" ope.log
 grep "adapter stage" ope.log
@@ -407,16 +451,19 @@ grep "adapter stage" ope.log
 ### Example Queries
 
 **Find slow requests (>1000ms):**
+
 ```bash
 grep "Request completed" ope.log | jq 'select(.duration > 1000)'
 ```
 
 **Count validation repairs by error kind:**
+
 ```bash
 grep "wasRepaired\":true" ope.log | jq -r '.errorKind' | sort | uniq -c
 ```
 
 **Average adapter duration:**
+
 ```bash
 grep "Completed adapter stage" ope.log | jq '.duration' | awk '{s+=$1; c++} END {print s/c}'
 ```
@@ -427,6 +474,7 @@ grep "Completed adapter stage" ope.log | jq '.duration' | awk '{s+=$1; c++} END 
 
 1. Get request ID from response header or client logs
 2. Grep all logs for that request ID:
+
 ```bash
 grep "abc-123" ope.log
 ```
@@ -437,21 +485,25 @@ grep "abc-123" ope.log
 ### Common Issues
 
 **High Repair Rate:**
+
 - Check validation logs for error kinds
 - Examine model responses (run locally with echo adapter)
 - Consider adjusting prompt templates
 
 **Adapter Timeouts:**
+
 - Look for long adapter stage durations
 - Check network connectivity to LLM provider
 - Verify API key and configuration
 
 **Empty Responses:**
+
 - Check adapter logs for HTTP errors
 - Verify model is generating content
 - Look for finish_reason in openaiStyle logs
 
 **Performance Issues:**
+
 - Identify slow stages from duration metrics
 - Check total request duration
 - Monitor adapter response times
@@ -459,7 +511,8 @@ grep "abc-123" ope.log
 ## Best Practices
 
 1. **Always include request ID** in bug reports or incident investigations
-2. **Monitor validation repair rate** - high rates indicate prompt engineering issues
+2. **Monitor validation repair rate** - high rates indicate prompt engineering
+   issues
 3. **Set up log aggregation** in production for easier searching
 4. **Use structured log parsing** (jq, jq-like tools) for analysis
 5. **Track key metrics over time** (request duration, error rates, repair rates)
@@ -469,6 +522,8 @@ grep "abc-123" ope.log
 
 - [src/lib/logger.ts](../src/lib/logger.ts) - Logging utility functions
 - [src/server.ts](../src/server.ts) - HTTP server with request/response logging
-- [src/routes/generate.ts](../src/routes/generate.ts) - Pipeline orchestration logging
+- [src/routes/generate.ts](../src/routes/generate.ts) - Pipeline orchestration
+  logging
 - [src/adapters/](../src/adapters) - Adapter-specific logging
-- [test/remote.smoke.test.ts](../test/remote.smoke.test.ts) - Test logging examples
+- [test/remote.smoke.test.ts](../test/remote.smoke.test.ts) - Test logging
+  examples

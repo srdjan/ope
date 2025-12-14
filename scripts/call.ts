@@ -36,7 +36,10 @@ console.log("=== RESPONSE ENHANCED PROMPT ===");
 const compiled = (parsed as {
   meta?: { compiled?: { system?: string; user?: string } };
 })?.meta?.compiled;
-if (compiled && typeof compiled.system === "string" && typeof compiled.user === "string") {
+if (
+  compiled && typeof compiled.system === "string" &&
+  typeof compiled.user === "string"
+) {
   console.log("--- SYSTEM PROMPT ---");
   console.log(compiled.system);
   console.log();

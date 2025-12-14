@@ -16,27 +16,37 @@ import {
 
 // Domain Detection Tests
 Deno.test("detectDomain - identifies medical domain", () => {
-  const result = detectDomain("What are the symptoms of diabetes and its treatment options?");
+  const result = detectDomain(
+    "What are the symptoms of diabetes and its treatment options?",
+  );
   assertEquals(result, "medical");
 });
 
 Deno.test("detectDomain - identifies code domain", () => {
-  const result = detectDomain("Write a function in JavaScript to sort an array");
+  const result = detectDomain(
+    "Write a function in JavaScript to sort an array",
+  );
   assertEquals(result, "code");
 });
 
 Deno.test("detectDomain - identifies code domain from code block", () => {
-  const result = detectDomain("Fix this bug:\n```javascript\nconst x = null;\n```");
+  const result = detectDomain(
+    "Fix this bug:\n```javascript\nconst x = null;\n```",
+  );
   assertEquals(result, "code");
 });
 
 Deno.test("detectDomain - identifies legal domain", () => {
-  const result = detectDomain("What are my legal rights in a contract dispute?");
+  const result = detectDomain(
+    "What are my legal rights in a contract dispute?",
+  );
   assertEquals(result, "legal");
 });
 
 Deno.test("detectDomain - identifies academic domain", () => {
-  const result = detectDomain("What is the research methodology for a peer-reviewed study?");
+  const result = detectDomain(
+    "What is the research methodology for a peer-reviewed study?",
+  );
   assertEquals(result, "academic");
 });
 
@@ -75,7 +85,7 @@ Deno.test("calculateAmbiguityScore - vague 'fix it' scores high", () => {
 
 Deno.test("calculateAmbiguityScore - specific prompt scores low", () => {
   const { score } = calculateAmbiguityScore(
-    "Fix the null pointer exception in UserService.java line 42 where user.getName() is called"
+    "Fix the null pointer exception in UserService.java line 42 where user.getName() is called",
   );
   assert(score < 0.3, `Expected score < 0.3, got ${score}`);
 });
@@ -83,14 +93,16 @@ Deno.test("calculateAmbiguityScore - specific prompt scores low", () => {
 Deno.test("calculateAmbiguityScore - very short prompts score higher", () => {
   const { score: shortScore } = calculateAmbiguityScore("help");
   const { score: longScore } = calculateAmbiguityScore(
-    "Help me understand how to implement authentication in a React application"
+    "Help me understand how to implement authentication in a React application",
   );
   assert(shortScore > longScore, "Short prompts should score higher");
 });
 
 // Analyze Prompt Tests
 Deno.test("analyzePrompt - returns complete analysis", () => {
-  const analysis = analyzePrompt("What are diabetes symptoms? And also treatment options?");
+  const analysis = analyzePrompt(
+    "What are diabetes symptoms? And also treatment options?",
+  );
 
   assertEquals(analysis.detectedDomain, "medical");
   assertEquals(analysis.isCompoundQuestion, true);
@@ -99,10 +111,15 @@ Deno.test("analyzePrompt - returns complete analysis", () => {
 });
 
 Deno.test("analyzePrompt - provides examples for detected domain", () => {
-  const analysis = analyzePrompt("Write a JavaScript function to sort an array");
+  const analysis = analyzePrompt(
+    "Write a JavaScript function to sort an array",
+  );
 
   assertEquals(analysis.detectedDomain, "code");
-  assert(analysis.suggestedExamples.length > 0, "Should have suggested examples for code domain");
+  assert(
+    analysis.suggestedExamples.length > 0,
+    "Should have suggested examples for code domain",
+  );
 });
 
 // Enhance Prompt Tests
@@ -115,15 +132,19 @@ Deno.test("enhancePrompt - mode none returns original", () => {
 });
 
 Deno.test("enhancePrompt - structures compound questions", () => {
-  const result = enhancePrompt("What is React and how does it work and what are hooks?", "rules");
+  const result = enhancePrompt(
+    "What is React and how does it work and what are hooks?",
+    "rules",
+  );
 
   assert(
     result.enhancementsApplied.includes("structured_compound_question"),
-    "Should apply compound question structuring"
+    "Should apply compound question structuring",
   );
   assert(
-    result.enhancedPrompt.includes("1.") || result.enhancedPrompt.includes("2."),
-    "Enhanced prompt should have numbered items"
+    result.enhancedPrompt.includes("1.") ||
+      result.enhancedPrompt.includes("2."),
+    "Enhanced prompt should have numbered items",
   );
 });
 
@@ -132,7 +153,7 @@ Deno.test("enhancePrompt - detects domain and adds to enhancements", () => {
 
   assert(
     result.enhancementsApplied.some((e) => e.startsWith("domain_detected:")),
-    "Should detect and record domain"
+    "Should detect and record domain",
   );
   assertEquals(result.analysis.detectedDomain, "medical");
 });
@@ -142,11 +163,11 @@ Deno.test("enhancePrompt - adds clarity note for very vague prompts", () => {
 
   assert(
     result.enhancementsApplied.includes("clarity_improvement"),
-    "Should add clarity improvement"
+    "Should add clarity improvement",
   );
   assert(
     result.enhancedPrompt.includes("[Note:"),
-    "Enhanced prompt should include clarification note"
+    "Enhanced prompt should include clarification note",
   );
 });
 
@@ -155,7 +176,7 @@ Deno.test("enhancePrompt - expands simple definition questions for detected doma
 
   assert(
     result.enhancementsApplied.includes("definition_question_expanded"),
-    "Should expand a simple definition question"
+    "Should expand a simple definition question",
   );
   assertEquals(
     result.enhancedPrompt,
@@ -168,11 +189,11 @@ Deno.test("enhancePrompt - suggests examples for detected domain", () => {
 
   assert(
     result.enhancementsApplied.includes("examples_suggested"),
-    "Should suggest examples"
+    "Should suggest examples",
   );
   assert(
     result.analysis.suggestedExamples.length > 0,
-    "Should have suggested examples"
+    "Should have suggested examples",
   );
 });
 
@@ -182,10 +203,10 @@ Deno.test("enhancePrompt - clear prompt has minimal enhancements", () => {
   // Should not have clarity improvement or compound structuring
   assert(
     !result.enhancementsApplied.includes("clarity_improvement"),
-    "Clear prompt should not need clarity improvement"
+    "Clear prompt should not need clarity improvement",
   );
   assert(
     !result.enhancementsApplied.includes("structured_compound_question"),
-    "Single question should not be structured"
+    "Single question should not be structured",
   );
 });

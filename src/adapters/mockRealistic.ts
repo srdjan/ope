@@ -27,7 +27,12 @@ function extractRawPrompt(compiledUser: string): string {
  */
 export const mockRealistic: Adapter = (
   args: GenerateArgs,
-): Promise<import("../lib/result.ts").Result<GenerateResult, import("./types.ts").AdapterError>> => {
+): Promise<
+  import("../lib/result.ts").Result<
+    GenerateResult,
+    import("./types.ts").AdapterError
+  >
+> => {
   const rawPrompt = extractRawPrompt(args.user);
   const mockResponse = findMockResponse(rawPrompt);
 

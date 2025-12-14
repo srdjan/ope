@@ -41,6 +41,7 @@
         display: flex;
         flex-direction: column;
         gap: 16px;
+        min-height: 0;
       }
 
       header {
@@ -76,6 +77,7 @@
         display: flex;
         flex-direction: column;
         gap: 16px;
+        min-height: 0;
       }
 
       label {
@@ -102,11 +104,50 @@
         gap: 14px;
       }
 
+      .field-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      @media (min-width: 920px) {
+        .field-grid {
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+      }
+
+      select,
+      input[type="text"] {
+        width: 100%;
+        padding: 10px 12px;
+        font: inherit;
+        font-size: 0.92rem;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.85);
+        color: var(--text);
+        transition: border 120ms ease, box-shadow 120ms ease;
+      }
+
+      select:focus,
+      input[type="text"]:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(47, 111, 237, 0.16);
+      }
+
+      .hint {
+        font-size: 0.78rem;
+        color: var(--muted);
+        margin-top: 6px;
+      }
+
       .tabs {
         display: flex;
         gap: 10px;
         border-bottom: 1px solid var(--border);
         padding-bottom: 6px;
+        flex-wrap: wrap;
       }
 
       .tab {
@@ -300,6 +341,82 @@
           align-items: flex-start;
           gap: 8px;
         }
+
+        .field-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* Keep everything visible (no page scroll) on common short desktop viewports. */
+      @media (min-width: 721px) and (max-height: 820px) {
+        body {
+          height: 100vh;
+          overflow: hidden;
+          padding-bottom: 16px;
+        }
+
+        main {
+          height: 100%;
+        }
+
+        #input-panel,
+        #output-panel {
+          flex: 1 1 0;
+          overflow: hidden;
+        }
+
+        #output-panel {
+          flex: 1.25 1 0;
+        }
+
+        #enhance-form {
+          display: flex;
+          flex-direction: column;
+          min-height: 0;
+          gap: 12px;
+        }
+
+        #raw-prompt {
+          flex: 1 1 auto;
+          min-height: 0;
+          resize: none;
+        }
+
+        .field-grid {
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+
+        /* Tab content stretches to fill remaining height inside the panel. */
+        .tabpanel {
+          flex: 1 1 auto;
+          min-height: 0;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .tabpanel textarea {
+          flex: 1 1 auto;
+          min-height: 0;
+          height: 100%;
+          resize: none;
+        }
+
+        #panel-final .stack {
+          flex: 1 1 auto;
+          min-height: 0;
+        }
+
+        #panel-final .stack > div {
+          flex: 1 1 0;
+          min-height: 0;
+          display: flex;
+          flex-direction: column;
+        }
+
+        #error-message {
+          max-height: 20vh;
+          overflow: auto;
+        }
       }
 
       @media (min-height: 900px) {
@@ -362,6 +479,8 @@
         const errorId = "error-message";
         const copyButtonId = "copy-button";
         const copyFeedbackId = "copy-feedback";
+        const contextSelectId = "context-select";
+        const contextHintId = "context-hint";
         const tabSignatureId = "tab-signature";
         const tabPromptId = "tab-prompt";
         const tabFinalId = "tab-final";
@@ -398,12 +517,16 @@
 
         const getCompiledPrompts = (payload) => {
           const meta = payload && payload.meta ? payload.meta : null;
-          const signature = meta && meta.signature ? meta.signature : null;
+          const signature = meta && meta.signature
+            ? meta.signature
+            : null;
           const compiled = meta && meta.compiled ? meta.compiled : null;
           const source = signature || compiled;
           if (!source) return { system: "", user: "" };
           return {
-            system: typeof source.system === "string" ? source.system : "",
+            system: typeof source.system === "string"
+              ? source.system
+              : "",
             user: typeof source.user === "string" ? source.user : "",
           };
         };
@@ -456,19 +579,24 @@
           // since meta.prompt / meta.enhancement may be display-formatted in demo mode.
           const { user: compiledUser } = getCompiledPrompts(payload);
           if (compiledUser) {
-            const taskMatch = compiledUser.match(/TASK:\n([\s\S]*?)\n\nOUTPUT:/);
+            const taskMatch = compiledUser.match(
+              /TASK:\n([\s\S]*?)\n\nOUTPUT:/,
+            );
             if (taskMatch && typeof taskMatch[1] === "string") {
               return taskMatch[1];
             }
           }
 
-          const enhanced = payload && payload.meta && payload.meta.enhancement &&
-              typeof payload.meta.enhancement.enhancedPrompt === "string"
-            ? payload.meta.enhancement.enhancedPrompt
-            : null;
+          const enhanced =
+            payload && payload.meta && payload.meta.enhancement &&
+              typeof payload.meta.enhancement.enhancedPrompt ===
+                "string"
+              ? payload.meta.enhancement.enhancedPrompt
+              : null;
           if (enhanced && enhanced.length) return enhanced;
 
-          const prompt = payload && payload.meta && typeof payload.meta.prompt === "string"
+          const prompt = payload && payload.meta &&
+              typeof payload.meta.prompt === "string"
             ? payload.meta.prompt
             : "";
           return prompt;
@@ -494,19 +622,30 @@
         };
 
         const getActiveTabText = (currentState) => {
-          if (currentState.activeTab === "signature") return currentState.signatureText;
-          if (currentState.activeTab === "prompt") return currentState.enhancedPromptText;
+          if (currentState.activeTab === "signature") {
+            return currentState.signatureText;
+          }
+          if (currentState.activeTab === "prompt") {
+            return currentState.enhancedPromptText;
+          }
           if (currentState.activeTab === "final") {
             const system = currentState.finalSystemText ?? "";
             const user = currentState.finalUserText ?? "";
             // Copy as a structured payload while preserving exact strings.
             return JSON.stringify(
-              { messages: [{ role: "system", content: system }, { role: "user", content: user }] },
+              {
+                messages: [{ role: "system", content: system }, {
+                  role: "user",
+                  content: user,
+                }],
+              },
               null,
               2,
             );
           }
-          if (currentState.activeTab === "output") return currentState.modelOutputText;
+          if (currentState.activeTab === "output") {
+            return currentState.modelOutputText;
+          }
           return "";
         };
 
@@ -542,7 +681,9 @@
             form: document.getElementById(enhanceFormId),
             signatureOutput: document.getElementById(signatureOutputId),
             promptOutput: document.getElementById(promptOutputId),
-            finalSystemOutput: document.getElementById(finalSystemOutputId),
+            finalSystemOutput: document.getElementById(
+              finalSystemOutputId,
+            ),
             finalUserOutput: document.getElementById(finalUserOutputId),
             modelOutput: document.getElementById(modelOutputId),
             status: document.getElementById(statusId),
@@ -552,6 +693,8 @@
             ),
             copy: document.getElementById(copyButtonId),
             feedback: document.getElementById(copyFeedbackId),
+            contextSelect: document.getElementById(contextSelectId),
+            contextHint: document.getElementById(contextHintId),
             tabSignature: document.getElementById(tabSignatureId),
             tabPrompt: document.getElementById(tabPromptId),
             tabFinal: document.getElementById(tabFinalId),
@@ -723,6 +866,59 @@
 
           render(state);
 
+          const populateContexts = async () => {
+            if (!elements.contextSelect) return;
+            try {
+              const res = await fetch("/v1/contexts", {
+                headers: { accept: "application/json" },
+              });
+              if (!res.ok) throw new Error(`HTTP ${res.status}`);
+              const payload = await res.json();
+              const contexts =
+                payload && Array.isArray(payload.contexts)
+                  ? payload.contexts
+                  : [];
+              const options = contexts
+                .filter((c) =>
+                  c && typeof c.id === "string" &&
+                  typeof c.name === "string"
+                )
+                .map((c) => ({
+                  id: c.id,
+                  name: c.name,
+                  description: typeof c.description === "string"
+                    ? c.description
+                    : "",
+                }))
+                .sort((a, b) => a.name.localeCompare(b.name));
+
+              for (const ctx of options) {
+                const opt = document.createElement("option");
+                opt.value = ctx.id;
+                opt.textContent = ctx.id;
+                opt.title = ctx.description
+                  ? `${ctx.name} — ${ctx.description}`
+                  : ctx.name;
+                elements.contextSelect.appendChild(opt);
+              }
+
+              if (elements.contextHint) {
+                elements.contextHint.hidden = false;
+                elements.contextHint.textContent = options.length
+                  ? `Loaded ${options.length} context(s). Hover to preview.`
+                  : "No contexts found.";
+              }
+            } catch (_err) {
+              if (elements.contextHint) {
+                elements.contextHint.hidden = false;
+                elements.contextHint.textContent =
+                  "Contexts unavailable (server did not respond).";
+              }
+            }
+          };
+
+          populateContexts();
+
           document.body.addEventListener(
             "htmx:beforeRequest",
             (event) => {
@@ -746,7 +942,9 @@
 
               if (successful) {
                 const signatureText = deriveSignatureText(payload);
-                const enhancedPromptText = deriveEnhancedPromptText(payload);
+                const enhancedPromptText = deriveEnhancedPromptText(
+                  payload,
+                );
                 const finalSystemText = deriveFinalSystemText(payload);
                 const finalUserText = deriveFinalUserText(payload);
                 const modelOutputText = deriveModelOutputText(payload);
@@ -860,7 +1058,8 @@
               if (key === "Home") nextIndex = 0;
               if (key === "End") nextIndex = order.length - 1;
               if (key === "ArrowLeft") {
-                nextIndex = (currentIndex - 1 + order.length) % order.length;
+                nextIndex = (currentIndex - 1 + order.length) %
+                  order.length;
               }
               if (key === "ArrowRight") {
                 nextIndex = (currentIndex + 1) % order.length;
@@ -906,7 +1105,7 @@
         </p>
       </header>
 
-      <section class="panel" aria-labelledby="original-label">
+      <section class="panel" id="input-panel" aria-labelledby="original-label">
         <label id="original-label" for="raw-prompt">Original Prompt</label>
         <form
           id="enhance-form"
@@ -922,6 +1121,39 @@
             placeholder="Paste the prompt you want to polish. Add goals, constraints, or any relevant context."
             autocomplete="off"
           ></textarea>
+          <div class="field-grid" aria-label="Advanced options">
+            <div>
+              <label for="task-type">taskType</label>
+              <select id="task-type" name="taskType">
+                <option value="">auto</option>
+                <option value="qa">qa</option>
+                <option value="extract">extract</option>
+                <option value="summarize">summarize</option>
+              </select>
+            </div>
+            <div>
+              <label for="target-hint">targetHint</label>
+              <select id="target-hint" name="targetHint">
+                <option value="">auto</option>
+                <option value="local">local</option>
+                <option value="cloud">cloud</option>
+              </select>
+            </div>
+            <div>
+              <label for="context-select">context</label>
+              <select id="context-select" name="context">
+                <option value="">auto (detect)</option>
+              </select>
+              <div class="hint" id="context-hint" hidden></div>
+            </div>
+            <div>
+              <label for="enhance-mode">enhance</label>
+              <select id="enhance-mode" name="enhance">
+                <option value="rules" selected>rules</option>
+                <option value="none">none</option>
+              </select>
+            </div>
+          </div>
           <div class="form-actions">
             <button type="submit">Enhance Prompt</button>
             <span
@@ -937,7 +1169,7 @@
         </form>
       </section>
 
-      <section class="panel" aria-labelledby="enhanced-label">
+      <section class="panel" id="output-panel" aria-labelledby="enhanced-label">
         <div class="label-row">
           <label id="enhanced-label">Pipeline Output</label>
           <button
@@ -961,7 +1193,7 @@
             aria-controls="panel-signature"
             tabindex="-1"
           >
-            Prompt IR
+            DSPy Signature
           </button>
           <button
             type="button"

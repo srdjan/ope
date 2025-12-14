@@ -101,8 +101,10 @@ export const MOCK_DATASET: ReadonlyArray<MockEntry> = [
     domain: "code",
     response: {
       answer:
-        "A Python function returns `None` when:\n\n**1. No return statement**\n```python\ndef greet(name):\n    print(f\"Hello, {name}\")  # No return\n\nresult = greet(\"Alice\")  # result is None\n```\n\n**2. Empty return**\n```python\ndef process():\n    if condition:\n        return  # Returns None\n```\n\n**3. Explicit return None**\n```python\ndef find_item(lst, target):\n    for item in lst:\n        if item == target:\n            return item\n    return None  # Not found\n```\n\n**4. Not all paths return**\n```python\ndef check(x):\n    if x > 0:\n        return \"positive\"\n    # Missing return for x <= 0!\n```\n\n**Debugging tips:**\n- Add `print()` statements to trace execution\n- Check all code paths return a value\n- Use type hints: `def func() -> str:` to catch issues\n- Verify conditional logic covers all cases",
-      citations: ["https://docs.python.org/3/reference/simple_stmts.html#return"],
+        'A Python function returns `None` when:\n\n**1. No return statement**\n```python\ndef greet(name):\n    print(f"Hello, {name}")  # No return\n\nresult = greet("Alice")  # result is None\n```\n\n**2. Empty return**\n```python\ndef process():\n    if condition:\n        return  # Returns None\n```\n\n**3. Explicit return None**\n```python\ndef find_item(lst, target):\n    for item in lst:\n        if item == target:\n            return item\n    return None  # Not found\n```\n\n**4. Not all paths return**\n```python\ndef check(x):\n    if x > 0:\n        return "positive"\n    # Missing return for x <= 0!\n```\n\n**Debugging tips:**\n- Add `print()` statements to trace execution\n- Check all code paths return a value\n- Use type hints: `def func() -> str:` to catch issues\n- Verify conditional logic covers all cases',
+      citations: [
+        "https://docs.python.org/3/reference/simple_stmts.html#return",
+      ],
     },
   },
 

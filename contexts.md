@@ -3,7 +3,8 @@
 This file defines pluggable context instructions for customizing LLM behavior
 across different domains.
 
-Each context is defined using the following YAML-like structure between `---` markers:
+Each context is defined using the following YAML-like structure between `---`
+markers:
 
 ```yaml
 id: unique-identifier

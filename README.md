@@ -54,8 +54,9 @@ deno lint
 deno fmt
 ```
 
-With the dev server running, open [http://127.0.0.1:8787/](http://127.0.0.1:8787/)
-to access the browser UI or keep using the API endpoints directly.
+With the dev server running, open
+[http://127.0.0.1:8787/](http://127.0.0.1:8787/) to access the browser UI or
+keep using the API endpoints directly.
 
 ## Configuration
 
@@ -102,10 +103,10 @@ Generate an optimized response using the prompt enhancement pipeline.
 ```json
 {
   "rawPrompt": "Explain Raft consensus in ~150 words",
-  "taskType": "summarize",   // Optional: "qa" | "extract" | "summarize"
-  "targetHint": "local",     // Optional: "local" | "cloud"
-  "context": "academic",     // Optional: context ID (medical, legal, code, etc.)
-  "enhance": "rules"         // Optional: "rules" (default) | "none"
+  "taskType": "summarize", // Optional: "qa" | "extract" | "summarize"
+  "targetHint": "local", // Optional: "local" | "cloud"
+  "context": "academic", // Optional: context ID (medical, legal, code, etc.)
+  "enhance": "rules" // Optional: "rules" (default) | "none"
 }
 ```
 
@@ -179,11 +180,26 @@ Health check endpoint.
 
 **Response**: `200 OK` with body `"ok"`
 
+### `GET /v1/contexts`
+
+List available context IDs loaded from `contexts.md`.
+
+**Response**: `200 OK` with JSON body:
+
+```json
+{
+  "contexts": [
+    { "id": "medical", "name": "Medical", "description": "…" }
+  ]
+}
+```
+
 ### `POST /shutdown`
 
 Graceful shutdown endpoint for development and CI/CD.
 
 **Response**: `200 OK` with JSON body:
+
 ```json
 {
   "message": "Server shutting down gracefully"
@@ -191,12 +207,14 @@ Graceful shutdown endpoint for development and CI/CD.
 ```
 
 **Behavior**:
+
 - Responds immediately before shutting down
 - Uses `queueMicrotask()` to schedule shutdown after response is sent
 - Performs graceful shutdown via `server.shutdown()` if available
 - Falls back to `Deno.exit(0)` if shutdown method not available
 
 **Example**:
+
 ```bash
 curl -X POST http://localhost:8787/shutdown
 ```
@@ -207,12 +225,15 @@ The repository includes a static, server-rendered HTML page at
 `ui/public/index.html` that the Deno server serves from `/`. It uses HTMX for
 form submission while keeping the markup simple and cache-friendly.
 
-- **Prompt Input**: enter the baseline prompt, then submit with the `Enhance Prompt`
-  button.
+- **Prompt Input**: enter the baseline prompt, then submit with the
+  `Enhance Prompt` button.
+- **Advanced Options**: optionally set `taskType`, `targetHint`, `context`, and
+  `enhance` mode.
 - **Loading State**: the submit button locks and shows a spinner while awaiting
   the `/v1/generate` response.
-- **Enhanced Output**: the read-only textarea renders `output.answer`. Errors
-  from the API surface inline with helpful copy.
+- **Tabbed Output**: inspect the DSPy signature, enhanced prompt, final prompt
+  payload, and model output.
+- **Error Handling**: errors from the API surface inline with helpful copy.
 - **Copy to Clipboard**: a dedicated button copies the enhanced prompt and shows
   transient confirmation text.
 - **Responsive Layout**: spacing and typography adjust cleanly for mobile and
@@ -277,9 +298,11 @@ deno fmt
 
 ### Remote Testing
 
-The project includes comprehensive smoke tests for validating deployed OPE instances:
+The project includes comprehensive smoke tests for validating deployed OPE
+instances:
 
 **Test Coverage** ([test/remote.smoke.test.ts](test/remote.smoke.test.ts)):
+
 - Health check endpoint validation
 - Basic generation request/response structure
 - All task types (qa, extract, summarize)
@@ -290,6 +313,7 @@ The project includes comprehensive smoke tests for validating deployed OPE insta
 - Concurrent request handling
 
 **Quick Start**:
+
 ```bash
 # Test the default deployed instance
 deno task test:remote
@@ -299,6 +323,7 @@ OPE_HOST=https://your-instance.com deno task test:remote
 ```
 
 **What Gets Tested**:
+
 - ✅ Health endpoint returns "ok"
 - ✅ /v1/generate accepts valid requests
 - ✅ Response structure matches schema (output, meta)

@@ -6,7 +6,8 @@
  *   deno run --allow-net scripts/shutdown.ts http://localhost:8787
  */
 
-const host = Deno.args[0] ?? Deno.env.get("OPE_HOST") ?? "http://localhost:8787";
+const host = Deno.args[0] ?? Deno.env.get("OPE_HOST") ??
+  "http://localhost:8787";
 
 console.log(`Sending shutdown request to ${host}...`);
 

@@ -43,13 +43,33 @@ export async function handleGenerate(
     enhance?: EnhanceMode;
   };
 
+  const taskType =
+    rawBody.taskType === "qa" || rawBody.taskType === "extract" ||
+      rawBody.taskType === "summarize"
+      ? rawBody.taskType
+      : undefined;
+
+  const targetHint =
+    rawBody.targetHint === "local" || rawBody.targetHint === "cloud"
+      ? rawBody.targetHint
+      : undefined;
+
+  const enhance = rawBody.enhance === "rules" || rawBody.enhance === "none"
+    ? rawBody.enhance
+    : undefined;
+
+  const context =
+    typeof rawBody.context === "string" && rawBody.context.trim().length > 0
+      ? rawBody.context.trim()
+      : undefined;
+
   // Create properly typed request with branded types
   const request: GenerateRequest = {
     rawPrompt: makePromptText(rawBody.rawPrompt),
-    taskType: rawBody.taskType,
-    targetHint: rawBody.targetHint,
-    context: rawBody.context,
-    enhance: rawBody.enhance,
+    taskType,
+    targetHint,
+    context,
+    enhance,
   };
 
   // Resolve context instruction (if provided)
@@ -65,7 +85,10 @@ export async function handleGenerate(
       return new Response(
         JSON.stringify({
           error: "Unknown context",
-          detail: `Context '${request.context}' not found. Available contexts: ${port.listContexts().join(", ")}`,
+          detail:
+            `Context '${request.context}' not found. Available contexts: ${
+              port.listContexts().join(", ")
+            }`,
         }),
         {
           status: 400,
@@ -249,14 +272,18 @@ function ensureDemoEnhancedPromptAlways(
   cfg: ConfigPort,
 ): EnhancementResult {
   const envFlag = Deno.env.get("OPE_ALWAYS_ENHANCE_PROMPT");
-  const alwaysEnhance = envFlag === "true" ? true : envFlag === "false"
+  const alwaysEnhance = envFlag === "true"
+    ? true
+    : envFlag === "false"
     ? false
     : cfg.isMockMode();
 
   if (!alwaysEnhance) return enhancement;
 
   const enhancedPrompt = formatEnhancedPromptDisplay(enhancement);
-  const alreadyTagged = enhancement.enhancementsApplied.includes("display_formatted");
+  const alreadyTagged = enhancement.enhancementsApplied.includes(
+    "display_formatted",
+  );
 
   return {
     ...enhancement,
@@ -291,7 +318,8 @@ function formatEnhancedPromptDisplay(enhancement: EnhancementResult): string {
       creative: "Creative Writing",
       technical: "Technical Documentation",
     };
-    const domainName = domainNames[analysis.detectedDomain] ?? analysis.detectedDomain;
+    const domainName = domainNames[analysis.detectedDomain] ??
+      analysis.detectedDomain;
     enhancements.push(`Domain: ${domainName}`);
   }
 
@@ -304,7 +332,9 @@ function formatEnhancedPromptDisplay(enhancement: EnhancementResult): string {
   }
 
   if (analysis.suggestedExamples.length > 0) {
-    enhancements.push(`${analysis.suggestedExamples.length} few-shot example(s) added`);
+    enhancements.push(
+      `${analysis.suggestedExamples.length} few-shot example(s) added`,
+    );
   }
 
   // Add enhancements section if any

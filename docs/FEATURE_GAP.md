@@ -4,17 +4,18 @@
 
 ## Implementation Summary
 
-The OPE system now includes **actual prompt enhancement** via the rule-based enhancement engine.
+The OPE system now includes **actual prompt enhancement** via the rule-based
+enhancement engine.
 
 ### What Was Implemented
 
-| Feature | Status | Description |
-|---------|--------|-------------|
-| Domain Detection | ✅ | Auto-detects medical, code, legal, academic, business, educational, creative, technical |
-| Compound Question Structuring | ✅ | Breaks multi-part questions into numbered steps |
-| Clarity Improvement | ✅ | Flags vague prompts with clarification notes |
-| Few-Shot Examples | ✅ | Populates `PromptIR.examples` based on detected domain |
-| Auto-Context | ✅ | Applies detected domain as context when none specified |
+| Feature                       | Status | Description                                                                             |
+| ----------------------------- | ------ | --------------------------------------------------------------------------------------- |
+| Domain Detection              | ✅     | Auto-detects medical, code, legal, academic, business, educational, creative, technical |
+| Compound Question Structuring | ✅     | Breaks multi-part questions into numbered steps                                         |
+| Clarity Improvement           | ✅     | Flags vague prompts with clarification notes                                            |
+| Few-Shot Examples             | ✅     | Populates `PromptIR.examples` based on detected domain                                  |
+| Auto-Context                  | ✅     | Applies detected domain as context when none specified                                  |
 
 ### New Files Created
 
@@ -24,7 +25,8 @@ The OPE system now includes **actual prompt enhancement** via the rule-based enh
 
 ### Files Modified
 
-- `src/types.ts` - Added `EnhanceMode`, `PromptAnalysis`, `EnhancementResult` types
+- `src/types.ts` - Added `EnhanceMode`, `PromptAnalysis`, `EnhancementResult`
+  types
 - `src/routes/generate.ts` - Added enhancement stage to pipeline
 - `src/engine/analyze.ts` - Accepts `PromptAnalysis` for complexity adjustments
 - `src/engine/synthesize.ts` - Uses enhanced prompt and populates examples
@@ -74,18 +76,21 @@ type GenerateRequest = {
 }
 ```
 
-**Note**: The `enhancement` field only appears when enhancements were actually applied.
+**Note**: The `enhancement` field only appears when enhancements were actually
+applied.
 
 ---
 
 ## Example: Before vs After
 
 ### Input
+
 ```
 "What is TypeScript?"
 ```
 
 ### Before (No Enhancement)
+
 ```
 ROLE: precise expert
 OBJECTIVE: Answer the user's request accurately and concisely.
@@ -98,6 +103,7 @@ OUTPUT: Return a JSON object...
 ```
 
 ### After (With Enhancement)
+
 ```
 ROLE: precise expert
 OBJECTIVE: Answer about TypeScript accurately and concisely.
@@ -115,6 +121,7 @@ OUTPUT: Return a JSON object...
 ```
 
 Key improvements:
+
 - ✅ Objective now mentions "TypeScript" (extracted from prompt)
 - ✅ Code domain detected automatically
 - ✅ Domain-specific examples added for few-shot learning
@@ -147,11 +154,13 @@ deno test -A
 ## Future Work (Phase 2+)
 
 ### Phase 2: LLM-Based Enhancement
+
 - Use meta-prompting to intelligently enhance prompts
 - Would add optional `enhance: "llm"` mode
 - Higher quality but adds latency and cost
 
 ### Phase 3: Ax/DSPy Integration
+
 - Data-driven prompt optimization
 - Learn optimal patterns from successful prompts
 - Requires training data collection
@@ -161,6 +170,7 @@ deno test -A
 ## Documentation
 
 Updated documentation:
+
 - [README.md](../README.md) - Pipeline flow, key features, API
 - [USER_GUIDE.md](USER_GUIDE.md) - Enhancement section added
 - [CLAUDE.md](../CLAUDE.md) - Architecture description updated

@@ -7,9 +7,9 @@
 import { assertEquals, assertExists } from "jsr:@std/assert";
 import { parseContextsMarkdown } from "../src/lib/contextParser.ts";
 import {
+  type ContextDefinition,
   makeTestContextPort,
   validateContextInstruction,
-  type ContextDefinition,
 } from "../src/ports/context.ts";
 import { handleGenerate } from "../src/routes/generate.ts";
 import { makeTestConfig } from "../src/ports/config.ts";

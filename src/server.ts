@@ -2,6 +2,7 @@ import { PORT } from "./config.ts";
 import { handleGenerate } from "./routes/generate.ts";
 import { createRequestLogger, logError, logInfo } from "./lib/logger.ts";
 import { JSON_HEADERS } from "./lib/httpErrors.ts";
+import { getContextPort } from "./contextConfig.ts";
 
 const isDeploy = Boolean(Deno.env.get("DENO_DEPLOYMENT_ID"));
 
@@ -98,6 +99,22 @@ const handler = async (req: Request): Promise<Response> => {
       }
     } else if (method === "GET" && path === "/") {
       response = await serveIndex(logger);
+    } else if (method === "GET" && path === "/v1/contexts") {
+      const port = await getContextPort();
+      response = new Response(
+        JSON.stringify(
+          {
+            contexts: port.getAllContexts().map((ctx) => ({
+              id: ctx.id,
+              name: ctx.name,
+              description: ctx.description,
+            })),
+          },
+          null,
+          2,
+        ),
+        { status: 200, headers: JSON_HEADERS },
+      );
     } else if (method === "GET" && path === "/health") {
       response = new Response("ok");
     } else if (method === "POST" && path === "/shutdown") {

@@ -262,11 +262,23 @@ export const VAGUE_TERM_PATTERNS: ReadonlyArray<{
   { pattern: /^(?:explain|fix|help with)\s+it\b/i, term: "it", score: 0.8 },
   { pattern: /^(?:explain|fix|help with)\s+this\b/i, term: "this", score: 0.7 },
   { pattern: /^(?:explain|fix|help with)\s+that\b/i, term: "that", score: 0.7 },
-  { pattern: /\bmake\s+it\s+(?:better|work|faster)\b/i, term: "make it better", score: 0.6 },
+  {
+    pattern: /\bmake\s+it\s+(?:better|work|faster)\b/i,
+    term: "make it better",
+    score: 0.6,
+  },
   { pattern: /^(?:help|assist)\s*$/i, term: "help", score: 0.9 },
-  { pattern: /^(?:what|how|why)\s*\??\s*$/i, term: "incomplete question", score: 0.9 },
+  {
+    pattern: /^(?:what|how|why)\s*\??\s*$/i,
+    term: "incomplete question",
+    score: 0.9,
+  },
   { pattern: /\bsome\s+(?:things?|stuff)\b/i, term: "some things", score: 0.4 },
-  { pattern: /\bfix\s+(?:the\s+)?(?:issue|problem|bug)\b/i, term: "fix the issue", score: 0.5 },
+  {
+    pattern: /\bfix\s+(?:the\s+)?(?:issue|problem|bug)\b/i,
+    term: "fix the issue",
+    score: 0.5,
+  },
 ];
 
 /**
@@ -281,7 +293,8 @@ export const DOMAIN_EXAMPLES: ReadonlyMap<
     [
       {
         user: "What are common cold symptoms?",
-        assistant: '{"answer": "Common cold symptoms include runny or stuffy nose, sore throat, cough, congestion, slight body aches, sneezing, low-grade fever, and general malaise. Symptoms typically appear 1-3 days after exposure and last 7-10 days. Note: This is general information only. Consult a healthcare professional for medical advice.", "citations": ["unknown"]}',
+        assistant:
+          '{"answer": "Common cold symptoms include runny or stuffy nose, sore throat, cough, congestion, slight body aches, sneezing, low-grade fever, and general malaise. Symptoms typically appear 1-3 days after exposure and last 7-10 days. Note: This is general information only. Consult a healthcare professional for medical advice.", "citations": ["unknown"]}',
       },
     ],
   ],
@@ -290,7 +303,8 @@ export const DOMAIN_EXAMPLES: ReadonlyMap<
     [
       {
         user: "How do I reverse a string in JavaScript?",
-        assistant: '{"answer": "To reverse a string in JavaScript: `str.split(\'\').reverse().join(\'\')`. This splits the string into an array of characters, reverses the array, then joins back into a string. For Unicode-safe reversal, use `[...str].reverse().join(\'\')` to properly handle multi-byte characters.", "citations": ["unknown"]}',
+        assistant:
+          '{"answer": "To reverse a string in JavaScript: `str.split(\'\').reverse().join(\'\')`. This splits the string into an array of characters, reverses the array, then joins back into a string. For Unicode-safe reversal, use `[...str].reverse().join(\'\')` to properly handle multi-byte characters.", "citations": ["unknown"]}',
       },
     ],
   ],
@@ -299,7 +313,8 @@ export const DOMAIN_EXAMPLES: ReadonlyMap<
     [
       {
         user: "What is a contract?",
-        assistant: '{"answer": "A contract is a legally binding agreement between two or more parties that creates mutual obligations enforceable by law. Key elements include: offer, acceptance, consideration, capacity, and legal purpose. Note: This is general legal information, not legal advice. Consult an attorney for specific legal matters.", "citations": ["unknown"]}',
+        assistant:
+          '{"answer": "A contract is a legally binding agreement between two or more parties that creates mutual obligations enforceable by law. Key elements include: offer, acceptance, consideration, capacity, and legal purpose. Note: This is general legal information, not legal advice. Consult an attorney for specific legal matters.", "citations": ["unknown"]}',
       },
     ],
   ],
@@ -308,7 +323,8 @@ export const DOMAIN_EXAMPLES: ReadonlyMap<
     [
       {
         user: "What is peer review?",
-        assistant: '{"answer": "Peer review is a scholarly evaluation process where experts in a field assess the quality, validity, and significance of academic work before publication. It serves as a quality control mechanism in scientific and academic publishing, helping ensure research meets methodological standards and contributes meaningfully to the field.", "citations": ["unknown"]}',
+        assistant:
+          '{"answer": "Peer review is a scholarly evaluation process where experts in a field assess the quality, validity, and significance of academic work before publication. It serves as a quality control mechanism in scientific and academic publishing, helping ensure research meets methodological standards and contributes meaningfully to the field.", "citations": ["unknown"]}',
       },
     ],
   ],
@@ -317,7 +333,8 @@ export const DOMAIN_EXAMPLES: ReadonlyMap<
     [
       {
         user: "As a user, I want to log in with email and password",
-        assistant: '{"answer": "# Specification: User Login\\n\\n## API Contract\\nPOST /api/v1/auth/login\\n\\n## Data Model\\nUser { id, email, passwordHash, lastLoginAt }\\n\\n## Acceptance Criteria\\n1. Valid credentials return JWT token\\n2. Invalid credentials return 401\\n3. Account lockout after 5 failed attempts\\n\\n## Edge Cases\\n- Expired password, Locked account, Concurrent sessions\\n\\n## Test Scenarios\\n| Given | When | Then |\\n|-------|------|------|\\n| Valid user | Login | 200 + token |", "citations": ["https://owasp.org/www-community/controls/Session_Management"]}',
+        assistant:
+          '{"answer": "# Specification: User Login\\n\\n## API Contract\\nPOST /api/v1/auth/login\\n\\n## Data Model\\nUser { id, email, passwordHash, lastLoginAt }\\n\\n## Acceptance Criteria\\n1. Valid credentials return JWT token\\n2. Invalid credentials return 401\\n3. Account lockout after 5 failed attempts\\n\\n## Edge Cases\\n- Expired password, Locked account, Concurrent sessions\\n\\n## Test Scenarios\\n| Given | When | Then |\\n|-------|------|------|\\n| Valid user | Login | 200 + token |", "citations": ["https://owasp.org/www-community/controls/Session_Management"]}',
       },
     ],
   ],

@@ -5,13 +5,13 @@ code in this repository.
 
 ## Project Overview
 
-**OPE (Online Prompt Enhancer)** is a Deno-based prompt optimization system
-that implements a complete pipeline: analyze → synthesize → compile → route →
+**OPE (Online Prompt Enhancer)** is a Deno-based prompt optimization system that
+implements a complete pipeline: analyze → synthesize → compile → route →
 generate → validate. The system is model-agnostic, supporting local echo/HTTP
 models and cloud OpenAI-compatible APIs.
 
-**Tech Stack**: Deno 2.x, Light Functional TypeScript (no classes), Web
-Platform APIs, Branded Types, Result<T,E> pattern, Ports & Adapters
+**Tech Stack**: Deno 2.x, Light Functional TypeScript (no classes), Web Platform
+APIs, Branded Types, Result<T,E> pattern, Ports & Adapters
 
 ## Development Commands
 
@@ -110,8 +110,8 @@ The enhancement stage ([src/engine/enhance.ts](src/engine/enhance.ts)) performs
 
 **Pattern Files:**
 
-- [src/lib/patterns.ts](src/lib/patterns.ts) - Domain keywords, compound question
-  patterns, vague term detectors, and domain-specific examples
+- [src/lib/patterns.ts](src/lib/patterns.ts) - Domain keywords, compound
+  question patterns, vague term detectors, and domain-specific examples
 
 **Configuration:**
 
@@ -219,8 +219,8 @@ logic.
 ### Context System (Pluggable Instructions)
 
 OPE supports **pluggable context instructions** that customize LLM behavior for
-specific domains (medical, legal, code, academic, etc.) while keeping core
-logic pure.
+specific domains (medical, legal, code, academic, etc.) while keeping core logic
+pure.
 
 **Context Definition** ([contexts.md](contexts.md)):
 
@@ -327,8 +327,8 @@ Response:
 }
 ```
 
-**Note**: The `enhancement` field is only present when enhancements were actually
-applied (i.e., `enhancementsApplied.length > 0`).
+**Note**: The `enhancement` field is only present when enhancements were
+actually applied (i.e., `enhancementsApplied.length > 0`).
 
 **Validation Tracking**: The `validation` field provides transparency about
 response processing:
@@ -336,8 +336,7 @@ response processing:
 - `wasRepaired: false` - Response was valid JSON with correct schema
 - `wasRepaired: true` - Response was repaired (check `errorKind` and
   `errorDetail`)
-  - `errorKind: "INVALID_JSON"` - Response wasn't valid JSON (wrapped as
-    answer)
+  - `errorKind: "INVALID_JSON"` - Response wasn't valid JSON (wrapped as answer)
   - `errorKind: "MISSING_FIELDS"` - JSON missing required fields (filled
     defaults)
   - `errorKind: "INVALID_TYPES"` - Type coercion needed
@@ -348,14 +347,17 @@ JSON schema.
 ### Additional Endpoints
 
 - **Health check**: `GET /health` → returns "ok"
-- **Graceful shutdown**: `POST /shutdown` → shuts down server gracefully after responding
+- **Graceful shutdown**: `POST /shutdown` → shuts down server gracefully after
+  responding
 
 **Shutdown endpoint usage:**
+
 ```bash
 curl -X POST http://localhost:8787/shutdown
 ```
 
 The shutdown endpoint:
+
 - Responds immediately with `{"message": "Server shutting down gracefully"}`
 - Schedules graceful server shutdown using `queueMicrotask()`
 - Ensures response is sent before shutdown begins
@@ -473,8 +475,9 @@ Each pipeline stage is independent:
 - **Validation**: Update schema in
   [src/engine/validate.ts](src/engine/validate.ts)
 
-The placeholder assignment in [src/routes/generate.ts:61](src/routes/generate.ts#L61)
-(`ir2 = ir`) is reserved for future Ax/DSPy optimization.
+The placeholder assignment in
+[src/routes/generate.ts:61](src/routes/generate.ts#L61) (`ir2 = ir`) is reserved
+for future Ax/DSPy optimization.
 
 ## Logging and Observability
 

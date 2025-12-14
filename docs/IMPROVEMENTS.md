@@ -157,14 +157,15 @@ export const makeTestConfig = (overrides): ConfigPort => {/* ... */};
 **Files Updated**:
 
 - [src/config.ts](../src/config.ts) - Now uses port pattern internally
-- [src/adapters/openaiStyle.ts](../src/adapters/openaiStyle.ts) - Uses CLOUD_MODEL
-  constant
+- [src/adapters/openaiStyle.ts](../src/adapters/openaiStyle.ts) - Uses
+  CLOUD_MODEL constant
 
 ---
 
 ### 4. Mock AI Mode ✅
 
-**Files**: [src/ports/config.ts](../src/ports/config.ts), [src/engine/route.ts](../src/engine/route.ts)
+**Files**: [src/ports/config.ts](../src/ports/config.ts),
+[src/engine/route.ts](../src/engine/route.ts)
 
 **What Changed**:
 
@@ -194,6 +195,7 @@ MOCK_AI=false
 ### 5. Rule-Based Prompt Enhancement ✅
 
 **Files**:
+
 - [src/engine/enhance.ts](../src/engine/enhance.ts) (new)
 - [src/lib/patterns.ts](../src/lib/patterns.ts) (new)
 - [test/enhance.test.ts](../test/enhance.test.ts) (new)
@@ -201,7 +203,8 @@ MOCK_AI=false
 **What Changed**:
 
 - Implemented the core feature gap: actual prompt enhancement
-- Added domain detection for 8 domains (medical, code, legal, academic, business, educational, creative, technical)
+- Added domain detection for 8 domains (medical, code, legal, academic,
+  business, educational, creative, technical)
 - Added compound question structuring
 - Added clarity improvement for vague prompts
 - Added few-shot example generation
@@ -354,10 +357,12 @@ With these improvements in place, you can now:
 ### Future Phases:
 
 **Phase 2: LLM-Based Enhancement** (optional)
+
 - Add `enhance: "llm"` mode for intelligent prompt rewriting
 - Higher quality but adds latency and cost
 
 **Phase 3: Ax/DSPy Integration** (advanced)
+
 - Data-driven prompt optimization
 - Learn optimal patterns from successful prompts
 
@@ -386,8 +391,8 @@ With these improvements in place, you can now:
 - `src/adapters/openaiStyle.ts` - Uses CLOUD_MODEL
 - `src/config.ts` - Refactored to use port pattern, mock mode
 
-**Total Lines of Code**: ~800 new, ~300 modified
-**Bug Risk**: Low (backwards compatible, all 48 tests passing)
+**Total Lines of Code**: ~800 new, ~300 modified **Bug Risk**: Low (backwards
+compatible, all 48 tests passing)
 
 ---
 
@@ -410,6 +415,7 @@ All following Light FP principles:
 - ✅ No exceptions in core (validation returns structured results)
 
 The codebase is now **production-ready** with:
+
 - Complete prompt enhancement pipeline
 - Domain detection for 8 domains
 - Few-shot example generation

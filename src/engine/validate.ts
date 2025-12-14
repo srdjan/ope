@@ -106,7 +106,9 @@ export function validateOrRepair(text: string): ValidationResult {
       }
       const safe = makeCitationUrlSafe(raw);
       if (safe === ("unknown" as CitationUrl) && raw !== "unknown") {
-        issues.push(`citation[${idx}] was not a valid URL (coerced to "unknown")`);
+        issues.push(
+          `citation[${idx}] was not a valid URL (coerced to "unknown")`,
+        );
       }
       return safe;
     });

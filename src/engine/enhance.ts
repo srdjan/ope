@@ -4,7 +4,11 @@
  * Following Light FP principles: no classes, immutable data, pure functions.
  */
 
-import type { EnhanceMode, EnhancementResult, PromptAnalysis } from "../types.ts";
+import type {
+  EnhancementResult,
+  EnhanceMode,
+  PromptAnalysis,
+} from "../types.ts";
 import {
   COMPOUND_QUESTION_PATTERNS,
   DOMAIN_EXAMPLES,
@@ -34,7 +38,10 @@ export function detectDomain(rawPrompt: string): string | null {
     const patternMatches = dp.patterns.filter((p) => p.test(rawPrompt)).length;
 
     // Calculate weighted score
-    if (keywordMatches >= MIN_KEYWORD_MATCHES || patternMatches >= MIN_PATTERN_MATCHES) {
+    if (
+      keywordMatches >= MIN_KEYWORD_MATCHES ||
+      patternMatches >= MIN_PATTERN_MATCHES
+    ) {
       score = (keywordMatches * 1 + patternMatches * 2) / dp.weight;
       scores.push({ domain: dp.domain, score });
     }
@@ -80,7 +87,11 @@ export function calculateAmbiguityScore(rawPrompt: string): {
   }
 
   // Short prompts are inherently more ambiguous
-  const lengthPenalty = rawPrompt.length < 20 ? 0.3 : rawPrompt.length < 50 ? 0.1 : 0;
+  const lengthPenalty = rawPrompt.length < 20
+    ? 0.3
+    : rawPrompt.length < 50
+    ? 0.1
+    : 0;
 
   // Cap at 1.0
   const finalScore = Math.min(1, totalScore + lengthPenalty);
@@ -229,7 +240,8 @@ function improveClarityIfNeeded(
   // Very short, vague prompts
   if (rawPrompt.length < 15 && ambiguityScore > 0.7) {
     return {
-      improved: `${rawPrompt}\n\n[Note: Please provide more context for a better response]`,
+      improved:
+        `${rawPrompt}\n\n[Note: Please provide more context for a better response]`,
       wasImproved: true,
     };
   }
@@ -237,7 +249,8 @@ function improveClarityIfNeeded(
   // Prompts with dangling references
   if (/^(?:fix|explain|help with)\s+(?:it|this|that)\b/i.test(rawPrompt)) {
     return {
-      improved: `${rawPrompt}\n\n[Note: Please specify what "it/this/that" refers to for a targeted response]`,
+      improved:
+        `${rawPrompt}\n\n[Note: Please specify what "it/this/that" refers to for a targeted response]`,
       wasImproved: true,
     };
   }

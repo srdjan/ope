@@ -29,7 +29,9 @@ export function compileIR(
   // Add examples for few-shot learning if provided (from enhancement)
   if (ir.examples.length > 0) {
     const examplesText = ir.examples
-      .map((ex, i) => `Example ${i + 1}:\nUser: ${ex.user}\nAssistant: ${ex.assistant}`)
+      .map((ex, i) =>
+        `Example ${i + 1}:\nUser: ${ex.user}\nAssistant: ${ex.assistant}`
+      )
       .join("\n\n");
     systemText += `\n\nEXAMPLES:\n${examplesText}`;
   }

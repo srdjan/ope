@@ -4,8 +4,11 @@
  * Parses contexts.md file to extract context definitions in YAML-like format.
  */
 
-import type { ContextDefinition, ContextInstruction } from "../ports/context.ts";
-import { ok, err, type Result } from "./result.ts";
+import type {
+  ContextDefinition,
+  ContextInstruction,
+} from "../ports/context.ts";
+import { err, ok, type Result } from "./result.ts";
 
 type ParseError = {
   readonly kind: "FILE_NOT_FOUND" | "INVALID_FORMAT" | "MISSING_FIELD";
@@ -142,8 +145,7 @@ function parseYamlContext(
       else if (key === "instruction") {
         // Start of instruction block
       }
-    }
-    // Instruction-level keys (2 spaces indent)
+    } // Instruction-level keys (2 spaces indent)
     else if (indent.length === 2) {
       currentKey = key;
 

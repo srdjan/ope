@@ -73,7 +73,8 @@ export function validateContextInstruction(
   ) {
     return {
       kind: "INVALID_TEMPERATURE",
-      detail: `Temperature must be between ${MIN_TEMPERATURE} and ${MAX_TEMPERATURE}, got ${instr.temperatureOverride}`,
+      detail:
+        `Temperature must be between ${MIN_TEMPERATURE} and ${MAX_TEMPERATURE}, got ${instr.temperatureOverride}`,
     };
   }
 
@@ -84,7 +85,8 @@ export function validateContextInstruction(
   ) {
     return {
       kind: "INVALID_MAX_TOKENS",
-      detail: `Max tokens must be between 1 and 100,000, got ${instr.maxTokensOverride}`,
+      detail:
+        `Max tokens must be between 1 and 100,000, got ${instr.maxTokensOverride}`,
     };
   }
 
@@ -102,7 +104,9 @@ export function validateContextInstruction(
     if (text.length > MAX_TEXT_LENGTH) {
       return {
         kind: "TEXT_TOO_LONG",
-        detail: `Text field exceeds ${MAX_TEXT_LENGTH} characters: ${text.slice(0, 100)}...`,
+        detail: `Text field exceeds ${MAX_TEXT_LENGTH} characters: ${
+          text.slice(0, 100)
+        }...`,
       };
     }
   }

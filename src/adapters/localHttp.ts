@@ -6,7 +6,7 @@ import type {
 } from "./types.ts";
 import { err, ok, type Result } from "../lib/result.ts";
 import { LLM_BASE_URL } from "../config.ts";
-import { logInfo, logError } from "../lib/logger.ts";
+import { logError, logInfo } from "../lib/logger.ts";
 
 export const localHttp: Adapter = async (
   args: GenerateArgs,

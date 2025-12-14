@@ -142,7 +142,11 @@ Deno.test("Remote OPE - QA task type", async () => {
   assertEquals(typeof result.output.answer, "string");
 
   // QA should produce substantial answers
-  assertEquals(result.output.answer.length > 50, true, "QA answer should be substantial");
+  assertEquals(
+    result.output.answer.length > 50,
+    true,
+    "QA answer should be substantial",
+  );
 
   // Check that IR reflects QA task
   assertExists(result.meta.ir.objective);
@@ -151,7 +155,8 @@ Deno.test("Remote OPE - QA task type", async () => {
 
 Deno.test("Remote OPE - Extract task type", async () => {
   const result = await callGenerate({
-    rawPrompt: "Extract key facts from: The Eiffel Tower is 330 meters tall and was completed in 1889.",
+    rawPrompt:
+      "Extract key facts from: The Eiffel Tower is 330 meters tall and was completed in 1889.",
     taskType: "extract",
   }, "ExtractTask");
 
@@ -188,18 +193,23 @@ Deno.test("Remote OPE - Target hint: local", async () => {
   assertEquals(
     result.meta.model.startsWith("local/"),
     true,
-    `Expected local model, got: ${result.meta.model}`
+    `Expected local model, got: ${result.meta.model}`,
   );
 });
 
 Deno.test("Remote OPE - Complex prompt with multiple requirements", async () => {
   const result = await callGenerate({
-    rawPrompt: "Explain the CAP theorem in distributed systems, including examples of consistency vs availability tradeoffs",
+    rawPrompt:
+      "Explain the CAP theorem in distributed systems, including examples of consistency vs availability tradeoffs",
     taskType: "qa",
   }, "ComplexPrompt");
 
   assertExists(result.output.answer);
-  assertEquals(result.output.answer.length > 100, true, "Complex query should produce detailed answer");
+  assertEquals(
+    result.output.answer.length > 100,
+    true,
+    "Complex query should produce detailed answer",
+  );
 
   // Should have citations array (even if empty)
   assertEquals(Array.isArray(result.output.citations), true);
@@ -317,7 +327,7 @@ Deno.test("Remote OPE - Response time check", async () => {
   assertEquals(
     duration < 30000,
     true,
-    `Response took ${duration}ms, expected < 30000ms`
+    `Response took ${duration}ms, expected < 30000ms`,
   );
 
   console.log(`✓ Response time: ${duration}ms`);
@@ -345,7 +355,7 @@ Deno.test("Remote OPE - Multiple concurrent requests", async () => {
     "What is JavaScript?",
   ];
 
-  const promises = prompts.map(rawPrompt =>
+  const promises = prompts.map((rawPrompt) =>
     callGenerate({ rawPrompt, taskType: "summarize" })
   );
 
