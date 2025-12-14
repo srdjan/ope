@@ -15,7 +15,8 @@
         --accent: #2f6fed;
         --accent-hover: #2154c3;
         --error: #d63d3d;
-        --font-body: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+        --font-body:
+          "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
         --radius: 16px;
         --shadow: 0 12px 32px rgba(34, 43, 68, 0.12);
       }
@@ -32,21 +33,21 @@
         color: var(--text);
         display: flex;
         justify-content: center;
-        padding: 32px 16px 64px;
+        padding: 16px 12px 24px;
       }
 
       main {
         width: min(960px, 100%);
         display: flex;
         flex-direction: column;
-        gap: 24px;
+        gap: 16px;
       }
 
       header {
         display: flex;
         flex-direction: column;
         gap: 8px;
-        padding: 24px 28px;
+        padding: 16px 18px;
         background: var(--card);
         border-radius: var(--radius);
         border: 1px solid var(--border);
@@ -67,7 +68,7 @@
       }
 
       section.panel {
-        padding: 28px;
+        padding: 18px;
         background: var(--card);
         border-radius: var(--radius);
         border: 1px solid var(--border);
@@ -80,8 +81,8 @@
       label {
         display: block;
         font-weight: 500;
-        font-size: 0.95rem;
-        margin-bottom: 8px;
+        font-size: 0.9rem;
+        margin-bottom: 6px;
       }
 
       .label-row {
@@ -91,58 +92,62 @@
         gap: 12px;
       }
 
-	      .label-row label {
-	        margin: 0;
-	      }
+      .label-row label {
+        margin: 0;
+      }
 
-	      .tabs {
-	        display: flex;
-	        gap: 10px;
-	        border-bottom: 1px solid var(--border);
-	        padding-bottom: 6px;
-	      }
+      .tabs {
+        display: flex;
+        gap: 10px;
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 6px;
+      }
 
-	      .tab {
-	        appearance: none;
-	        border: 1px solid transparent;
-	        background: transparent;
-	        color: var(--muted);
-	        font: inherit;
-	        font-weight: 500;
-	        padding: 8px 10px;
-	        border-radius: 10px;
-	        cursor: pointer;
-	        transition: background 120ms ease, color 120ms ease, border 120ms ease;
-	      }
+      .tab {
+        appearance: none;
+        border: 1px solid transparent;
+        background: transparent;
+        color: var(--muted);
+        font: inherit;
+        font-weight: 500;
+        padding: 8px 10px;
+        border-radius: 10px;
+        cursor: pointer;
+        transition:
+          background 120ms ease,
+          color 120ms ease,
+          border 120ms ease;
+      }
 
-	      .tab:hover {
-	        background: rgba(47, 111, 237, 0.08);
-	        color: var(--text);
-	      }
+      .tab:hover {
+        background: rgba(47, 111, 237, 0.08);
+        color: var(--text);
+      }
 
-	      .tab[aria-selected="true"] {
-	        color: var(--text);
-	        border-color: rgba(47, 111, 237, 0.35);
-	        background: rgba(47, 111, 237, 0.12);
-	      }
+      .tab[aria-selected="true"] {
+        color: var(--text);
+        border-color: rgba(47, 111, 237, 0.35);
+        background: rgba(47, 111, 237, 0.12);
+      }
 
-	      .tab:focus-visible {
-	        outline: none;
-	        box-shadow: 0 0 0 3px rgba(47, 111, 237, 0.18);
-	      }
+      .tab:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(47, 111, 237, 0.18);
+      }
 
-	      .tabpanel[hidden] {
-	        display: none;
-	      }
+      .tabpanel[hidden] {
+        display: none;
+      }
 
-	      textarea {
-	        width: 100%;
-	        min-height: 200px;
-	        padding: 16px 18px;
-        font-family: "JetBrains Mono", "SFMono-Regular", ui-monospace, Menlo,
-          Consolas, "Liberation Mono", monospace;
-        font-size: 0.95rem;
-        line-height: 1.5;
+      textarea {
+        width: 100%;
+        min-height: 140px;
+        padding: 12px 14px;
+        font-family:
+          "JetBrains Mono", "SFMono-Regular", ui-monospace, Menlo, Consolas,
+          "Liberation Mono", monospace;
+        font-size: 0.9rem;
+        line-height: 1.45;
         color: var(--text);
         border: 1px solid var(--border);
         border-radius: 12px;
@@ -169,18 +174,20 @@
       .form-actions {
         display: flex;
         align-items: center;
-        gap: 16px;
+        gap: 12px;
       }
 
       button {
         cursor: pointer;
         border: none;
         border-radius: 999px;
-        padding: 0.75rem 1.75rem;
+        padding: 0.6rem 1.4rem;
         font-weight: 600;
-        font-size: 0.95rem;
+        font-size: 0.9rem;
         letter-spacing: 0.01em;
-        transition: transform 120ms ease, box-shadow 120ms ease,
+        transition:
+          transform 120ms ease,
+          box-shadow 120ms ease,
           background 120ms ease;
       }
 
@@ -243,12 +250,12 @@
       }
 
       .status {
-        font-size: 0.9rem;
+        font-size: 0.85rem;
         color: var(--muted);
       }
 
       .feedback {
-        font-size: 0.85rem;
+        font-size: 0.8rem;
         color: var(--muted);
         min-height: 1em;
       }
@@ -257,19 +264,19 @@
         background: rgba(214, 61, 61, 0.08);
         border: 1px solid rgba(214, 61, 61, 0.32);
         color: var(--error);
-        padding: 14px 18px;
+        padding: 10px 14px;
         border-radius: 12px;
-        font-size: 0.92rem;
+        font-size: 0.9rem;
       }
 
       @media (max-width: 720px) {
         header,
         section.panel {
-          padding: 22px;
+          padding: 16px;
         }
 
         textarea {
-          min-height: 160px;
+          min-height: 130px;
         }
 
         .form-actions {
@@ -288,109 +295,187 @@
           gap: 8px;
         }
       }
+
+      @media (min-height: 900px) {
+        body {
+          padding: 32px 16px 64px;
+        }
+
+        main {
+          gap: 24px;
+        }
+
+        header {
+          padding: 24px 28px;
+        }
+
+        section.panel {
+          padding: 28px;
+        }
+
+        textarea {
+          min-height: 200px;
+          padding: 16px 18px;
+          font-size: 0.95rem;
+          line-height: 1.5;
+        }
+
+        button {
+          padding: 0.75rem 1.75rem;
+          font-size: 0.95rem;
+        }
+
+        .status {
+          font-size: 0.9rem;
+        }
+
+        .feedback {
+          font-size: 0.85rem;
+        }
+
+        .error {
+          padding: 14px 18px;
+          font-size: 0.92rem;
+        }
+      }
     </style>
     <script defer src="https://unpkg.com/htmx.org@1.9.12"></script>
-    <script defer src="https://unpkg.com/htmx.org@1.9.12/dist/ext/json-enc.js"></script>
+    <script
+      defer
+      src="https://unpkg.com/htmx.org@1.9.12/dist/ext/json-enc.js"
+    ></script>
     <script>
-	      (() => {
-	        const enhanceFormId = "enhance-form";
-	        const promptOutputId = "enhanced-output";
-	        const signatureOutputId = "signature-output";
-	        const statusId = "status-text";
-	        const errorId = "error-message";
-	        const copyButtonId = "copy-button";
-	        const copyFeedbackId = "copy-feedback";
-	        const tabSignatureId = "tab-signature";
-	        const tabPromptId = "tab-prompt";
-	        const tabFinalId = "tab-final";
-	        const panelSignatureId = "panel-signature";
-	        const panelPromptId = "panel-prompt";
-	        const panelFinalId = "panel-final";
-	        const finalOutputId = "final-output";
+      (() => {
+        const enhanceFormId = "enhance-form";
+        const promptOutputId = "enhanced-output";
+        const signatureOutputId = "signature-output";
+        const statusId = "status-text";
+        const errorId = "error-message";
+        const copyButtonId = "copy-button";
+        const copyFeedbackId = "copy-feedback";
+        const tabSignatureId = "tab-signature";
+        const tabPromptId = "tab-prompt";
+        const tabFinalId = "tab-final";
+        const panelSignatureId = "panel-signature";
+        const panelPromptId = "panel-prompt";
+        const panelFinalId = "panel-final";
+        const finalOutputId = "final-output";
 
-	        const createState = (overrides = {}) =>
-	          Object.freeze({
-	            isLoading: false,
-	            activeTab: "signature",
-	            signatureText: "",
-	            enhancedPromptText: "",
-	            finalPromptText: "",
-	            error: null,
-	            copyFeedback: "",
-	            ...overrides,
-	          });
+        const createState = (overrides = {}) =>
+          Object.freeze({
+            isLoading: false,
+            activeTab: "signature",
+            signatureText: "",
+            enhancedPromptText: "",
+            finalPromptText: "",
+            error: null,
+            copyFeedback: "",
+            ...overrides,
+          });
 
-        const mergeState = (prev, patch) => createState({ ...prev, ...patch });
+        const mergeState = (prev, patch) =>
+          createState({ ...prev, ...patch });
 
-	        const parseJsonSafe = (raw) => {
-	          try {
-	            return raw ? JSON.parse(raw) : null;
-	          } catch {
-	            return null;
-	          }
-	        };
+        const parseJsonSafe = (raw) => {
+          try {
+            return raw ? JSON.parse(raw) : null;
+          } catch {
+            return null;
+          }
+        };
 
-	        const deriveSignatureText = (payload) => {
-	          // DSPy Signature = IR structure (role, objective, constraints, etc.)
-	          const ir = payload && payload.meta && payload.meta.ir ? payload.meta.ir : null;
-	          if (!ir) return "";
+        const deriveSignatureText = (payload) => {
+          // DSPy Signature = IR structure (role, objective, constraints, etc.)
+          const ir = payload && payload.meta && payload.meta.ir
+            ? payload.meta.ir
+            : null;
+          if (!ir) return "";
 
-	          const lines = [];
-	          if (ir.role) lines.push(`ROLE: ${ir.role}`);
-	          if (ir.objective) lines.push(`OBJECTIVE: ${ir.objective}`);
-	          if (ir.constraints && ir.constraints.length) {
-	            lines.push(`CONSTRAINTS:\n${ir.constraints.map(c => `  • ${c}`).join("\n")}`);
-	          }
-	          if (ir.style && ir.style.length) {
-	            lines.push(`STYLE:\n${ir.style.map(s => `  • ${s}`).join("\n")}`);
-	          }
-	          if (ir.steps && ir.steps.length) {
-	            lines.push(`STEPS:\n${ir.steps.map((s, i) => `  ${i + 1}. ${s}`).join("\n")}`);
-	          }
-	          if (ir.examples && ir.examples.length) {
-	            lines.push(`EXAMPLES: ${ir.examples.length} few-shot example(s)`);
-	          }
-	          if (ir.outputSchema) {
-	            lines.push(`OUTPUT SCHEMA: ${JSON.stringify(ir.outputSchema)}`);
-	          }
-	          return lines.join("\n\n");
-	        };
+          const lines = [];
+          if (ir.role) lines.push(`ROLE: ${ir.role}`);
+          if (ir.objective) lines.push(`OBJECTIVE: ${ir.objective}`);
+          if (ir.constraints && ir.constraints.length) {
+            lines.push(
+              `CONSTRAINTS:\n${
+                ir.constraints.map((c) => `  • ${c}`).join("\n")
+              }`,
+            );
+          }
+          if (ir.style && ir.style.length) {
+            lines.push(
+              `STYLE:\n${ir.style.map((s) => `  • ${s}`).join("\n")}`,
+            );
+          }
+          if (ir.steps && ir.steps.length) {
+            lines.push(
+              `STEPS:\n${
+                ir.steps.map((s, i) => `  ${i + 1}. ${s}`).join("\n")
+              }`,
+            );
+          }
+          if (ir.examples && ir.examples.length) {
+            lines.push(
+              `EXAMPLES: ${ir.examples.length} few-shot example(s)`,
+            );
+          }
+          if (ir.outputSchema) {
+            lines.push(
+              `OUTPUT SCHEMA: ${JSON.stringify(ir.outputSchema)}`,
+            );
+          }
+          return lines.join("\n\n");
+        };
 
-	        const deriveEnhancedPromptText = (payload) => {
-	          // Enhanced Prompt = final compiled prompts (system + user) ready for model
-	          const signature = payload && payload.meta && payload.meta.signature
-	            ? payload.meta.signature
-	            : null;
-	          const system = signature && typeof signature.system === "string"
-	            ? signature.system
-	            : "";
-	          const user = signature && typeof signature.user === "string"
-	            ? signature.user
-	            : "";
-	          if (system && user) return `${system}\n\n${user}`;
-	          return user || system || "";
-	        };
+        const deriveEnhancedPromptText = (payload) => {
+          // Enhanced Prompt = final compiled prompts (system + user) ready for model
+          const signature =
+            payload && payload.meta && payload.meta.signature
+              ? payload.meta.signature
+              : null;
+          const system =
+            signature && typeof signature.system === "string"
+              ? signature.system
+              : "";
+          const user = signature && typeof signature.user === "string"
+            ? signature.user
+            : "";
+          if (system && user) return `${system}\n\n${user}`;
+          return user || system || "";
+        };
 
-	        const deriveFinalPromptText = (payload) => {
-	          // Final Prompt = model response (mock data)
-	          if (payload && payload.output && typeof payload.output.answer === "string") {
-	            return payload.output.answer;
-	          }
-	          return "";
-	        };
+        const deriveFinalPromptText = (payload) => {
+          // Final Prompt = model response (mock data)
+          if (
+            payload && payload.output &&
+            typeof payload.output.answer === "string"
+          ) {
+            return payload.output.answer;
+          }
+          return "";
+        };
 
-	        const getActiveTabText = (currentState) => {
-	          if (currentState.activeTab === "prompt") return currentState.enhancedPromptText;
-	          if (currentState.activeTab === "final") return currentState.finalPromptText;
-	          return currentState.signatureText;
-	        };
+        const getActiveTabText = (currentState) => {
+          if (currentState.activeTab === "prompt") {
+            return currentState.enhancedPromptText;
+          }
+          if (currentState.activeTab === "final") {
+            return currentState.finalPromptText;
+          }
+          return currentState.signatureText;
+        };
 
-	        const deriveErrorMessage = (payload, status) => {
-	          if (payload) {
-	            if (typeof payload.detail === "string" && payload.detail.trim().length) {
+        const deriveErrorMessage = (payload, status) => {
+          if (payload) {
+            if (
+              typeof payload.detail === "string" &&
+              payload.detail.trim().length
+            ) {
               return payload.detail.trim();
             }
-            if (typeof payload.error === "string" && payload.error.trim().length) {
+            if (
+              typeof payload.error === "string" &&
+              payload.error.trim().length
+            ) {
               return payload.error.trim();
             }
             if (
@@ -406,52 +491,55 @@
             : "We could not enhance that prompt. Double-check the text and try once more.";
         };
 
-	        const init = () => {
-	          const elements = Object.freeze({
-	            form: document.getElementById(enhanceFormId),
-	            signatureOutput: document.getElementById(signatureOutputId),
-	            promptOutput: document.getElementById(promptOutputId),
-	            finalOutput: document.getElementById(finalOutputId),
-	            status: document.getElementById(statusId),
-	            error: document.getElementById(errorId),
-	            submit: document.querySelector(`#${enhanceFormId} button[type="submit"]`),
-	            copy: document.getElementById(copyButtonId),
-	            feedback: document.getElementById(copyFeedbackId),
-	            tabSignature: document.getElementById(tabSignatureId),
-	            tabPrompt: document.getElementById(tabPromptId),
-	            tabFinal: document.getElementById(tabFinalId),
-	            panelSignature: document.getElementById(panelSignatureId),
-	            panelPrompt: document.getElementById(panelPromptId),
-	            panelFinal: document.getElementById(panelFinalId),
-	          });
+        const init = () => {
+          const elements = Object.freeze({
+            form: document.getElementById(enhanceFormId),
+            signatureOutput: document.getElementById(signatureOutputId),
+            promptOutput: document.getElementById(promptOutputId),
+            finalOutput: document.getElementById(finalOutputId),
+            status: document.getElementById(statusId),
+            error: document.getElementById(errorId),
+            submit: document.querySelector(
+              `#${enhanceFormId} button[type="submit"]`,
+            ),
+            copy: document.getElementById(copyButtonId),
+            feedback: document.getElementById(copyFeedbackId),
+            tabSignature: document.getElementById(tabSignatureId),
+            tabPrompt: document.getElementById(tabPromptId),
+            tabFinal: document.getElementById(tabFinalId),
+            panelSignature: document.getElementById(panelSignatureId),
+            panelPrompt: document.getElementById(panelPromptId),
+            panelFinal: document.getElementById(panelFinalId),
+          });
 
-	          if (
-	            !elements.form || !elements.submit || !elements.signatureOutput ||
-	            !elements.promptOutput
-	          ) {
-	            console.warn(
-	              "OPE UI: missing required elements. UI will not function.",
-	            );
-	            return;
-	          }
+          if (
+            !elements.form || !elements.submit ||
+            !elements.signatureOutput ||
+            !elements.promptOutput
+          ) {
+            console.warn(
+              "OPE UI: missing required elements. UI will not function.",
+            );
+            return;
+          }
 
           let state = createState();
           let clearCopyFeedbackTimer = 0;
 
-	          const render = (currentState) => {
-	            const {
-	              isLoading,
-	              activeTab,
-	              signatureText,
-	              enhancedPromptText,
-	              finalPromptText,
-	              error,
-	              copyFeedback,
-	            } = currentState;
+          const render = (currentState) => {
+            const {
+              isLoading,
+              activeTab,
+              signatureText,
+              enhancedPromptText,
+              finalPromptText,
+              error,
+              copyFeedback,
+            } = currentState;
 
-	            if (elements.submit) {
-	              elements.submit.disabled = isLoading;
-	              if (isLoading) {
+            if (elements.submit) {
+              elements.submit.disabled = isLoading;
+              if (isLoading) {
                 elements.submit.setAttribute("data-loading", "true");
               } else {
                 elements.submit.removeAttribute("data-loading");
@@ -459,61 +547,87 @@
             }
 
             if (elements.status) {
-              elements.status.textContent = isLoading ? "Enhancing…" : "";
+              elements.status.textContent = isLoading
+                ? "Enhancing…"
+                : "";
               elements.status.hidden = !isLoading;
             }
 
-	            if (elements.error) {
-	              if (error) {
-	                elements.error.textContent = error;
-	                elements.error.hidden = false;
-	              } else {
-	                elements.error.textContent = "";
-	                elements.error.hidden = true;
-	              }
-	            }
+            if (elements.error) {
+              if (error) {
+                elements.error.textContent = error;
+                elements.error.hidden = false;
+              } else {
+                elements.error.textContent = "";
+                elements.error.hidden = true;
+              }
+            }
 
-	            if (elements.signatureOutput) elements.signatureOutput.value = signatureText;
-	            if (elements.promptOutput) elements.promptOutput.value = enhancedPromptText;
-	            if (elements.finalOutput) elements.finalOutput.value = finalPromptText;
+            if (elements.signatureOutput) {
+              elements.signatureOutput.value = signatureText;
+            }
+            if (elements.promptOutput) {
+              elements.promptOutput.value = enhancedPromptText;
+            }
+            if (elements.finalOutput) {
+              elements.finalOutput.value = finalPromptText;
+            }
 
-	            // Tab visibility logic for three tabs
-	            const isSignature = activeTab === "signature";
-	            const isPrompt = activeTab === "prompt";
-	            const isFinal = activeTab === "final";
+            // Tab visibility logic for three tabs
+            const isSignature = activeTab === "signature";
+            const isPrompt = activeTab === "prompt";
+            const isFinal = activeTab === "final";
 
-	            if (elements.panelSignature) elements.panelSignature.hidden = !isSignature;
-	            if (elements.panelPrompt) elements.panelPrompt.hidden = !isPrompt;
-	            if (elements.panelFinal) elements.panelFinal.hidden = !isFinal;
+            if (elements.panelSignature) {
+              elements.panelSignature.hidden = !isSignature;
+            }
+            if (elements.panelPrompt) {
+              elements.panelPrompt.hidden = !isPrompt;
+            }
+            if (elements.panelFinal) {
+              elements.panelFinal.hidden = !isFinal;
+            }
 
-	            if (elements.tabSignature) {
-	              elements.tabSignature.setAttribute("aria-selected", isSignature ? "true" : "false");
-	              elements.tabSignature.tabIndex = isSignature ? 0 : -1;
-	            }
-	            if (elements.tabPrompt) {
-	              elements.tabPrompt.setAttribute("aria-selected", isPrompt ? "true" : "false");
-	              elements.tabPrompt.tabIndex = isPrompt ? 0 : -1;
-	            }
-	            if (elements.tabFinal) {
-	              elements.tabFinal.setAttribute("aria-selected", isFinal ? "true" : "false");
-	              elements.tabFinal.tabIndex = isFinal ? 0 : -1;
-	            }
+            if (elements.tabSignature) {
+              elements.tabSignature.setAttribute(
+                "aria-selected",
+                isSignature ? "true" : "false",
+              );
+              elements.tabSignature.tabIndex = isSignature ? 0 : -1;
+            }
+            if (elements.tabPrompt) {
+              elements.tabPrompt.setAttribute(
+                "aria-selected",
+                isPrompt ? "true" : "false",
+              );
+              elements.tabPrompt.tabIndex = isPrompt ? 0 : -1;
+            }
+            if (elements.tabFinal) {
+              elements.tabFinal.setAttribute(
+                "aria-selected",
+                isFinal ? "true" : "false",
+              );
+              elements.tabFinal.tabIndex = isFinal ? 0 : -1;
+            }
 
-	            if (elements.copy) {
-	              const activeText = getActiveTabText(currentState);
-	              elements.copy.disabled = !activeText || isLoading;
-	              const ariaLabels = {
-	                signature: "Copy DSPy signature to clipboard",
-	                prompt: "Copy enhanced prompt to clipboard",
-	                final: "Copy final prompt to clipboard",
-	              };
-	              elements.copy.setAttribute("aria-label", ariaLabels[activeTab] || ariaLabels.signature);
-	            }
+            if (elements.copy) {
+              const activeText = getActiveTabText(currentState);
+              elements.copy.disabled = !activeText || isLoading;
+              const ariaLabels = {
+                signature: "Copy DSPy signature to clipboard",
+                prompt: "Copy enhanced prompt to clipboard",
+                final: "Copy final prompt to clipboard",
+              };
+              elements.copy.setAttribute(
+                "aria-label",
+                ariaLabels[activeTab] || ariaLabels.signature,
+              );
+            }
 
-	            if (elements.feedback) {
-	              elements.feedback.textContent = copyFeedback;
-	            }
-	          };
+            if (elements.feedback) {
+              elements.feedback.textContent = copyFeedback;
+            }
+          };
 
           const replaceState = (next) => {
             state = createState(next);
@@ -521,14 +635,17 @@
             return state;
           };
 
-          const updateState = (transform) => replaceState(transform(state));
+          const updateState = (transform) =>
+            replaceState(transform(state));
 
           const resetCopyFeedbackLater = () => {
             if (clearCopyFeedbackTimer) {
               window.clearTimeout(clearCopyFeedbackTimer);
             }
             clearCopyFeedbackTimer = window.setTimeout(() => {
-              updateState((prev) => mergeState(prev, { copyFeedback: "" }));
+              updateState((prev) =>
+                mergeState(prev, { copyFeedback: "" })
+              );
             }, 2000);
           };
 
@@ -536,79 +653,104 @@
 
           render(state);
 
-          document.body.addEventListener("htmx:beforeRequest", (event) => {
-            if (!isEnhanceForm(event.target)) return;
-            updateState((prev) =>
-              mergeState(prev, { isLoading: true, error: null, copyFeedback: "" })
-            );
-          });
+          document.body.addEventListener(
+            "htmx:beforeRequest",
+            (event) => {
+              if (!isEnhanceForm(event.target)) return;
+              updateState((prev) =>
+                mergeState(prev, {
+                  isLoading: true,
+                  error: null,
+                  copyFeedback: "",
+                })
+              );
+            },
+          );
 
-	          document.body.addEventListener("htmx:afterRequest", (event) => {
-	            if (!isEnhanceForm(event.target)) return;
-	            const { xhr, successful } = event.detail;
-	            const payload = parseJsonSafe(xhr.responseText);
+          document.body.addEventListener(
+            "htmx:afterRequest",
+            (event) => {
+              if (!isEnhanceForm(event.target)) return;
+              const { xhr, successful } = event.detail;
+              const payload = parseJsonSafe(xhr.responseText);
 
-	            if (successful) {
-	              const signatureText = deriveSignatureText(payload);
-	              const enhancedPromptText = deriveEnhancedPromptText(payload);
-	              const finalPromptText = deriveFinalPromptText(payload);
-	              const shouldAutoSwitch = !signatureText && !!enhancedPromptText;
-	              updateState((prev) =>
-	                mergeState(prev, {
-	                  isLoading: false,
-	                  signatureText,
-	                  enhancedPromptText,
-	                  finalPromptText,
-	                  activeTab: shouldAutoSwitch && prev.activeTab === "signature"
-	                    ? "prompt"
-	                    : prev.activeTab,
-	                  error: null,
-	                })
-	              );
-	              return;
-	            }
+              if (successful) {
+                const signatureText = deriveSignatureText(payload);
+                const enhancedPromptText = deriveEnhancedPromptText(
+                  payload,
+                );
+                const finalPromptText = deriveFinalPromptText(payload);
+                const shouldAutoSwitch = !signatureText &&
+                  !!enhancedPromptText;
+                updateState((prev) =>
+                  mergeState(prev, {
+                    isLoading: false,
+                    signatureText,
+                    enhancedPromptText,
+                    finalPromptText,
+                    activeTab:
+                      shouldAutoSwitch && prev.activeTab === "signature"
+                        ? "prompt"
+                        : prev.activeTab,
+                    error: null,
+                  })
+                );
+                return;
+              }
 
-            updateState((prev) =>
-              mergeState(prev, {
-                isLoading: false,
-                error: deriveErrorMessage(payload, xhr.status),
-              })
-            );
-          });
+              updateState((prev) =>
+                mergeState(prev, {
+                  isLoading: false,
+                  error: deriveErrorMessage(payload, xhr.status),
+                })
+              );
+            },
+          );
 
           document.body.addEventListener("htmx:sendError", (event) => {
             if (!isEnhanceForm(event.target)) return;
             updateState((prev) =>
               mergeState(prev, {
                 isLoading: false,
-                error: "Network error: please check your connection and retry.",
+                error:
+                  "Network error: please check your connection and retry.",
               })
             );
           });
 
-          document.body.addEventListener("htmx:responseError", (event) => {
-            if (!isEnhanceForm(event.target)) return;
-            const payload = parseJsonSafe(event.detail.xhr.responseText);
-            updateState((prev) =>
-              mergeState(prev, {
-                isLoading: false,
-                error: deriveErrorMessage(payload, event.detail.xhr.status),
-              })
-            );
-          });
+          document.body.addEventListener(
+            "htmx:responseError",
+            (event) => {
+              if (!isEnhanceForm(event.target)) return;
+              const payload = parseJsonSafe(
+                event.detail.xhr.responseText,
+              );
+              updateState((prev) =>
+                mergeState(prev, {
+                  isLoading: false,
+                  error: deriveErrorMessage(
+                    payload,
+                    event.detail.xhr.status,
+                  ),
+                })
+              );
+            },
+          );
 
-	          if (elements.copy) {
-	            elements.copy.addEventListener("click", async () => {
-	              const activeText = getActiveTabText(state);
-	              if (!activeText || state.isLoading) {
-	                return;
-	              }
-	              try {
-	                await navigator.clipboard.writeText(activeText);
-	                updateState((prev) =>
-	                  mergeState(prev, { copyFeedback: "Copied to clipboard." })
-	                );
-	                resetCopyFeedbackLater();
+          if (elements.copy) {
+            elements.copy.addEventListener("click", async () => {
+              const activeText = getActiveTabText(state);
+              if (!activeText || state.isLoading) {
+                return;
+              }
+              try {
+                await navigator.clipboard.writeText(activeText);
+                updateState((prev) =>
+                  mergeState(prev, {
+                    copyFeedback: "Copied to clipboard.",
+                  })
+                );
+                resetCopyFeedbackLater();
               } catch (_err) {
                 updateState((prev) =>
                   mergeState(prev, {
@@ -616,53 +758,66 @@
                       "Unable to copy to clipboard. Your browser may not allow it.",
                   })
                 );
-	              }
-	            });
-	          }
+              }
+            });
+          }
 
-	          const setActiveTab = (nextTab) => {
-	            updateState((prev) => {
-	              if (nextTab !== "signature" && nextTab !== "prompt" && nextTab !== "final") return prev;
-	              return mergeState(prev, { activeTab: nextTab });
-	            });
-	          };
+          const setActiveTab = (nextTab) => {
+            updateState((prev) => {
+              if (
+                nextTab !== "signature" && nextTab !== "prompt" &&
+                nextTab !== "final"
+              ) return prev;
+              return mergeState(prev, { activeTab: nextTab });
+            });
+          };
 
-	          const wireTab = (el, tabValue) => {
-	            if (!el) return;
-	            el.addEventListener("click", () => setActiveTab(tabValue));
-	            el.addEventListener("keydown", (event) => {
-	              const key = event.key;
-	              if (
-	                key !== "ArrowLeft" && key !== "ArrowRight" && key !== "Home" &&
-	                key !== "End"
-	              ) return;
-	              event.preventDefault();
-	              const order = ["signature", "prompt", "final"];
-	              const currentIndex = order.indexOf(state.activeTab);
-	              let nextIndex = currentIndex;
-	              if (key === "Home") nextIndex = 0;
-	              if (key === "End") nextIndex = order.length - 1;
-	              if (key === "ArrowLeft") nextIndex = (currentIndex - 1 + order.length) % order.length;
-	              if (key === "ArrowRight") nextIndex = (currentIndex + 1) % order.length;
-	              const next = order[nextIndex];
-	              setActiveTab(next);
-	              const tabElements = {
-	                signature: elements.tabSignature,
-	                prompt: elements.tabPrompt,
-	                final: elements.tabFinal,
-	              };
-	              const focusEl = tabElements[next];
-	              if (focusEl && typeof focusEl.focus === "function") focusEl.focus();
-	            });
-	          };
+          const wireTab = (el, tabValue) => {
+            if (!el) return;
+            el.addEventListener("click", () => setActiveTab(tabValue));
+            el.addEventListener("keydown", (event) => {
+              const key = event.key;
+              if (
+                key !== "ArrowLeft" && key !== "ArrowRight" &&
+                key !== "Home" &&
+                key !== "End"
+              ) return;
+              event.preventDefault();
+              const order = ["signature", "prompt", "final"];
+              const currentIndex = order.indexOf(state.activeTab);
+              let nextIndex = currentIndex;
+              if (key === "Home") nextIndex = 0;
+              if (key === "End") nextIndex = order.length - 1;
+              if (key === "ArrowLeft") {
+                nextIndex = (currentIndex - 1 + order.length) %
+                  order.length;
+              }
+              if (key === "ArrowRight") {
+                nextIndex = (currentIndex + 1) % order.length;
+              }
+              const next = order[nextIndex];
+              setActiveTab(next);
+              const tabElements = {
+                signature: elements.tabSignature,
+                prompt: elements.tabPrompt,
+                final: elements.tabFinal,
+              };
+              const focusEl = tabElements[next];
+              if (focusEl && typeof focusEl.focus === "function") {
+                focusEl.focus();
+              }
+            });
+          };
 
-	          wireTab(elements.tabSignature, "signature");
-	          wireTab(elements.tabPrompt, "prompt");
-	          wireTab(elements.tabFinal, "final");
-	        };
+          wireTab(elements.tabSignature, "signature");
+          wireTab(elements.tabPrompt, "prompt");
+          wireTab(elements.tabFinal, "final");
+        };
 
-	        if (document.readyState === "loading") {
-	          document.addEventListener("DOMContentLoaded", init, { once: true });
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", init, {
+            once: true,
+          });
         } else {
           init();
         }
@@ -674,8 +829,8 @@
       <header>
         <h1>Online Prompt Enhancer</h1>
         <p>
-          Write your baseline prompt, press enhance, and receive a refined version
-          tuned for high-quality model responses.
+          Write your baseline prompt, press enhance, and receive a refined
+          version tuned for high-quality model responses.
         </p>
       </header>
 
@@ -697,101 +852,107 @@
           ></textarea>
           <div class="form-actions">
             <button type="submit">Enhance Prompt</button>
-            <span class="status" id="status-text" hidden role="status" aria-live="polite">
+            <span
+              class="status"
+              id="status-text"
+              hidden
+              role="status"
+              aria-live="polite"
+            >
               Enhancing…
             </span>
           </div>
         </form>
       </section>
 
-	      <section class="panel" aria-labelledby="enhanced-label">
-	        <div class="label-row">
-	          <label id="enhanced-label">Enhanced Prompt</label>
-	          <button
-	            type="button"
-	            class="copy"
-	            id="copy-button"
-	            aria-live="polite"
-	            aria-label="Copy enhanced prompt to clipboard"
-	            disabled
-	          >
-	            Copy
-	          </button>
-	        </div>
-	        <div class="tabs" role="tablist" aria-label="Enhanced prompt views">
-	          <button
-	            type="button"
-	            class="tab"
-	            id="tab-signature"
-	            role="tab"
-	            aria-selected="true"
-	            aria-controls="panel-signature"
-	          >
-	            DSPy Signature
-	          </button>
-	          <button
-	            type="button"
-	            class="tab"
-	            id="tab-prompt"
-	            role="tab"
-	            aria-selected="false"
-	            aria-controls="panel-prompt"
-	            tabindex="-1"
-	          >
-	            Enhanced Prompt
-	          </button>
-	          <button
-	            type="button"
-	            class="tab"
-	            id="tab-final"
-	            role="tab"
-	            aria-selected="false"
-	            aria-controls="panel-final"
-	            tabindex="-1"
-	          >
-	            Final Prompt
-	          </button>
-	        </div>
-	        <div
-	          id="panel-signature"
-	          class="tabpanel"
-	          role="tabpanel"
-	          aria-labelledby="tab-signature"
-	        >
-	          <textarea
-	            id="signature-output"
-	            readonly
-	            placeholder="The DSPy signature (IR structure) will appear here."
-	          ></textarea>
-	        </div>
-	        <div
-	          id="panel-prompt"
-	          class="tabpanel"
-	          role="tabpanel"
-	          aria-labelledby="tab-prompt"
-	          hidden
-	        >
-	          <textarea
-	            id="enhanced-output"
-	            readonly
-	            placeholder="The final enhanced prompt ready for the model will appear here."
-	          ></textarea>
-	        </div>
-	        <div
-	          id="panel-final"
-	          class="tabpanel"
-	          role="tabpanel"
-	          aria-labelledby="tab-final"
-	          hidden
-	        >
-	          <textarea
-	            id="final-output"
-	            readonly
-	            placeholder="The model response (mock data) will appear here."
-	          ></textarea>
-	        </div>
-	        <div class="feedback" id="copy-feedback" aria-live="polite"></div>
-	      </section>
+      <section class="panel" aria-labelledby="enhanced-label">
+        <div class="label-row">
+          <label id="enhanced-label">Enhanced Prompt</label>
+          <button
+            type="button"
+            class="copy"
+            id="copy-button"
+            aria-live="polite"
+            aria-label="Copy enhanced prompt to clipboard"
+            disabled
+          >
+            Copy
+          </button>
+        </div>
+        <div class="tabs" role="tablist" aria-label="Enhanced prompt views">
+          <button
+            type="button"
+            class="tab"
+            id="tab-signature"
+            role="tab"
+            aria-selected="true"
+            aria-controls="panel-signature"
+          >
+            DSPy Signature
+          </button>
+          <button
+            type="button"
+            class="tab"
+            id="tab-prompt"
+            role="tab"
+            aria-selected="false"
+            aria-controls="panel-prompt"
+            tabindex="-1"
+          >
+            Enhanced Prompt
+          </button>
+          <button
+            type="button"
+            class="tab"
+            id="tab-final"
+            role="tab"
+            aria-selected="false"
+            aria-controls="panel-final"
+            tabindex="-1"
+          >
+            Final Prompt
+          </button>
+        </div>
+        <div
+          id="panel-signature"
+          class="tabpanel"
+          role="tabpanel"
+          aria-labelledby="tab-signature"
+        >
+          <textarea
+            id="signature-output"
+            readonly
+            placeholder="The DSPy signature (IR structure) will appear here."
+          ></textarea>
+        </div>
+        <div
+          id="panel-prompt"
+          class="tabpanel"
+          role="tabpanel"
+          aria-labelledby="tab-prompt"
+          hidden
+        >
+          <textarea
+            id="enhanced-output"
+            readonly
+            placeholder="The final enhanced prompt ready for the model will appear here."
+          ></textarea>
+        </div>
+        <div
+          id="panel-final"
+          class="tabpanel"
+          role="tabpanel"
+          aria-labelledby="tab-final"
+          hidden
+        >
+          <textarea
+            id="final-output"
+            readonly
+            placeholder="The model response (mock data) will appear here."
+          ></textarea>
+        </div>
+        <div class="feedback" id="copy-feedback" aria-live="polite"></div>
+      </section>
 
       <div class="error" id="error-message" role="alert" hidden></div>
     </main>
