@@ -150,6 +150,19 @@ Deno.test("enhancePrompt - adds clarity note for very vague prompts", () => {
   );
 });
 
+Deno.test("enhancePrompt - expands simple definition questions for detected domains", () => {
+  const result = enhancePrompt("What is Docker?", "rules");
+
+  assert(
+    result.enhancementsApplied.includes("definition_question_expanded"),
+    "Should expand a simple definition question"
+  );
+  assertEquals(
+    result.enhancedPrompt,
+    "What is Docker? Please provide an explanation of what Docker is, including its purpose and main use cases.",
+  );
+});
+
 Deno.test("enhancePrompt - suggests examples for detected domain", () => {
   const result = enhancePrompt("Write a function in JavaScript", "rules");
 

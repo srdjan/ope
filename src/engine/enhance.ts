@@ -246,6 +246,44 @@ function improveClarityIfNeeded(
 }
 
 /**
+ * Expand a simple "What is X?" question into a slightly more specific request.
+ * Keeps the original question and adds a second sentence to guide the answer.
+ */
+function expandDefinitionQuestionIfNeeded(
+  rawPrompt: string,
+): { expanded: string; wasExpanded: boolean } {
+  const trimmed = rawPrompt.trim();
+
+  // Avoid expanding prompts that already contain guidance / multiple sentences.
+  const lower = trimmed.toLowerCase();
+  if (
+    lower.includes("please provide") ||
+    lower.includes("include ") ||
+    lower.includes("including ") ||
+    lower.includes("use cases") ||
+    trimmed.includes("\n")
+  ) {
+    return { expanded: rawPrompt, wasExpanded: false };
+  }
+
+  const match = trimmed.match(/^\s*what\s+is\s+(.+?)\s*\?\s*$/i);
+  if (!match) return { expanded: rawPrompt, wasExpanded: false };
+
+  const term = match[1]?.trim() ?? "";
+  if (!term || term.length > 80) {
+    return { expanded: rawPrompt, wasExpanded: false };
+  }
+
+  const suffix =
+    `Please provide an explanation of what ${term} is, including its purpose and main use cases.`;
+
+  return {
+    expanded: `${trimmed} ${suffix}`,
+    wasExpanded: true,
+  };
+}
+
+/**
  * Enhance a prompt based on analysis.
  * Pure function that applies rule-based enhancements.
  */
@@ -286,17 +324,29 @@ export function enhancePrompt(
     enhancementsApplied.push("clarity_improvement");
   }
 
-  // Enhancement 3: Domain detection (doesn't modify prompt, but informs context)
+  // Enhancement 3: Expand simple definition questions for detected domains
+  // (e.g., "What is Docker?" -> add purpose/use cases guidance).
+  if (analysis.detectedDomain && !analysis.isCompoundQuestion) {
+    const { expanded, wasExpanded } = expandDefinitionQuestionIfNeeded(
+      enhancedPrompt,
+    );
+    if (wasExpanded) {
+      enhancedPrompt = expanded;
+      enhancementsApplied.push("definition_question_expanded");
+    }
+  }
+
+  // Enhancement 4: Domain detection (doesn't modify prompt, but informs context)
   if (analysis.detectedDomain) {
     enhancementsApplied.push(`domain_detected:${analysis.detectedDomain}`);
   }
 
-  // Enhancement 4: Examples suggested (doesn't modify prompt, but populates IR)
+  // Enhancement 5: Examples suggested (doesn't modify prompt, but populates IR)
   if (analysis.suggestedExamples.length > 0) {
     enhancementsApplied.push("examples_suggested");
   }
 
-  // Enhancement 5: Structure user stories for specification generation
+  // Enhancement 6: Structure user stories for specification generation
   const userStoryInfo = detectUserStory(rawPrompt);
   if (userStoryInfo.isUserStory) {
     enhancedPrompt = structureUserStory(rawPrompt, userStoryInfo);

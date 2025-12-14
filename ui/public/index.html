@@ -96,6 +96,12 @@
         margin: 0;
       }
 
+      .stack {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+
       .tabs {
         display: flex;
         gap: 10px;
@@ -349,6 +355,9 @@
         const enhanceFormId = "enhance-form";
         const promptOutputId = "enhanced-output";
         const signatureOutputId = "signature-output";
+        const finalSystemOutputId = "final-system-output";
+        const finalUserOutputId = "final-user-output";
+        const modelOutputId = "model-output";
         const statusId = "status-text";
         const errorId = "error-message";
         const copyButtonId = "copy-button";
@@ -356,18 +365,21 @@
         const tabSignatureId = "tab-signature";
         const tabPromptId = "tab-prompt";
         const tabFinalId = "tab-final";
+        const tabOutputId = "tab-output";
         const panelSignatureId = "panel-signature";
         const panelPromptId = "panel-prompt";
         const panelFinalId = "panel-final";
-        const finalOutputId = "final-output";
+        const panelOutputId = "panel-output";
 
         const createState = (overrides = {}) =>
           Object.freeze({
             isLoading: false,
-            activeTab: "signature",
+            activeTab: "prompt",
             signatureText: "",
             enhancedPromptText: "",
-            finalPromptText: "",
+            finalSystemText: "",
+            finalUserText: "",
+            modelOutputText: "",
             error: null,
             copyFeedback: "",
             ...overrides,
@@ -382,6 +394,18 @@
           } catch {
             return null;
           }
+        };
+
+        const getCompiledPrompts = (payload) => {
+          const meta = payload && payload.meta ? payload.meta : null;
+          const signature = meta && meta.signature ? meta.signature : null;
+          const compiled = meta && meta.compiled ? meta.compiled : null;
+          const source = signature || compiled;
+          if (!source) return { system: "", user: "" };
+          return {
+            system: typeof source.system === "string" ? source.system : "",
+            user: typeof source.user === "string" ? source.user : "",
+          };
         };
 
         const deriveSignatureText = (payload) => {
@@ -427,26 +451,41 @@
         };
 
         const deriveEnhancedPromptText = (payload) => {
-          // Enhanced Prompt = final compiled prompts (system + user) ready for model
-          const signature =
-            payload && payload.meta && payload.meta.signature
-              ? payload.meta.signature
-              : null;
-          const system =
-            signature && typeof signature.system === "string"
-              ? signature.system
-              : "";
-          const user = signature && typeof signature.user === "string"
-            ? signature.user
+          // Enhanced Prompt = the transformed user prompt that will be sent to the model.
+          // Prefer extracting the exact prompt used from the compiled user prompt (TASK section),
+          // since meta.prompt / meta.enhancement may be display-formatted in demo mode.
+          const { user: compiledUser } = getCompiledPrompts(payload);
+          if (compiledUser) {
+            const taskMatch = compiledUser.match(/TASK:\n([\s\S]*?)\n\nOUTPUT:/);
+            if (taskMatch && typeof taskMatch[1] === "string") {
+              return taskMatch[1];
+            }
+          }
+
+          const enhanced = payload && payload.meta && payload.meta.enhancement &&
+              typeof payload.meta.enhancement.enhancedPrompt === "string"
+            ? payload.meta.enhancement.enhancedPrompt
+            : null;
+          if (enhanced && enhanced.length) return enhanced;
+
+          const prompt = payload && payload.meta && typeof payload.meta.prompt === "string"
+            ? payload.meta.prompt
             : "";
-          if (system && user) return `${system}\n\n${user}`;
-          return user || system || "";
+          return prompt;
         };
 
-        const deriveFinalPromptText = (payload) => {
-          // Final Prompt = model response (mock data)
+        const deriveFinalSystemText = (payload) => {
+          return getCompiledPrompts(payload).system;
+        };
+
+        const deriveFinalUserText = (payload) => {
+          return getCompiledPrompts(payload).user;
+        };
+
+        const deriveModelOutputText = (payload) => {
           if (
-            payload && payload.output &&
+            payload &&
+            payload.output &&
             typeof payload.output.answer === "string"
           ) {
             return payload.output.answer;
@@ -455,13 +494,20 @@
         };
 
         const getActiveTabText = (currentState) => {
-          if (currentState.activeTab === "prompt") {
-            return currentState.enhancedPromptText;
-          }
+          if (currentState.activeTab === "signature") return currentState.signatureText;
+          if (currentState.activeTab === "prompt") return currentState.enhancedPromptText;
           if (currentState.activeTab === "final") {
-            return currentState.finalPromptText;
+            const system = currentState.finalSystemText ?? "";
+            const user = currentState.finalUserText ?? "";
+            // Copy as a structured payload while preserving exact strings.
+            return JSON.stringify(
+              { messages: [{ role: "system", content: system }, { role: "user", content: user }] },
+              null,
+              2,
+            );
           }
-          return currentState.signatureText;
+          if (currentState.activeTab === "output") return currentState.modelOutputText;
+          return "";
         };
 
         const deriveErrorMessage = (payload, status) => {
@@ -496,7 +542,9 @@
             form: document.getElementById(enhanceFormId),
             signatureOutput: document.getElementById(signatureOutputId),
             promptOutput: document.getElementById(promptOutputId),
-            finalOutput: document.getElementById(finalOutputId),
+            finalSystemOutput: document.getElementById(finalSystemOutputId),
+            finalUserOutput: document.getElementById(finalUserOutputId),
+            modelOutput: document.getElementById(modelOutputId),
             status: document.getElementById(statusId),
             error: document.getElementById(errorId),
             submit: document.querySelector(
@@ -507,9 +555,11 @@
             tabSignature: document.getElementById(tabSignatureId),
             tabPrompt: document.getElementById(tabPromptId),
             tabFinal: document.getElementById(tabFinalId),
+            tabOutput: document.getElementById(tabOutputId),
             panelSignature: document.getElementById(panelSignatureId),
             panelPrompt: document.getElementById(panelPromptId),
             panelFinal: document.getElementById(panelFinalId),
+            panelOutput: document.getElementById(panelOutputId),
           });
 
           if (
@@ -532,7 +582,9 @@
               activeTab,
               signatureText,
               enhancedPromptText,
-              finalPromptText,
+              finalSystemText,
+              finalUserText,
+              modelOutputText,
               error,
               copyFeedback,
             } = currentState;
@@ -569,14 +621,21 @@
             if (elements.promptOutput) {
               elements.promptOutput.value = enhancedPromptText;
             }
-            if (elements.finalOutput) {
-              elements.finalOutput.value = finalPromptText;
+            if (elements.finalSystemOutput) {
+              elements.finalSystemOutput.value = finalSystemText;
+            }
+            if (elements.finalUserOutput) {
+              elements.finalUserOutput.value = finalUserText;
+            }
+            if (elements.modelOutput) {
+              elements.modelOutput.value = modelOutputText;
             }
 
-            // Tab visibility logic for three tabs
+            // Tab visibility logic
             const isSignature = activeTab === "signature";
             const isPrompt = activeTab === "prompt";
             const isFinal = activeTab === "final";
+            const isOutput = activeTab === "output";
 
             if (elements.panelSignature) {
               elements.panelSignature.hidden = !isSignature;
@@ -586,6 +645,9 @@
             }
             if (elements.panelFinal) {
               elements.panelFinal.hidden = !isFinal;
+            }
+            if (elements.panelOutput) {
+              elements.panelOutput.hidden = !isOutput;
             }
 
             if (elements.tabSignature) {
@@ -609,14 +671,22 @@
               );
               elements.tabFinal.tabIndex = isFinal ? 0 : -1;
             }
+            if (elements.tabOutput) {
+              elements.tabOutput.setAttribute(
+                "aria-selected",
+                isOutput ? "true" : "false",
+              );
+              elements.tabOutput.tabIndex = isOutput ? 0 : -1;
+            }
 
             if (elements.copy) {
               const activeText = getActiveTabText(currentState);
               elements.copy.disabled = !activeText || isLoading;
               const ariaLabels = {
-                signature: "Copy DSPy signature to clipboard",
+                signature: "Copy prompt IR to clipboard",
                 prompt: "Copy enhanced prompt to clipboard",
-                final: "Copy final prompt to clipboard",
+                final: "Copy final request payload to clipboard",
+                output: "Copy model output to clipboard",
               };
               elements.copy.setAttribute(
                 "aria-label",
@@ -676,18 +746,19 @@
 
               if (successful) {
                 const signatureText = deriveSignatureText(payload);
-                const enhancedPromptText = deriveEnhancedPromptText(
-                  payload,
-                );
-                const finalPromptText = deriveFinalPromptText(payload);
-                const shouldAutoSwitch = !signatureText &&
-                  !!enhancedPromptText;
+                const enhancedPromptText = deriveEnhancedPromptText(payload);
+                const finalSystemText = deriveFinalSystemText(payload);
+                const finalUserText = deriveFinalUserText(payload);
+                const modelOutputText = deriveModelOutputText(payload);
+                const shouldAutoSwitch = !!enhancedPromptText;
                 updateState((prev) =>
                   mergeState(prev, {
                     isLoading: false,
                     signatureText,
                     enhancedPromptText,
-                    finalPromptText,
+                    finalSystemText,
+                    finalUserText,
+                    modelOutputText,
                     activeTab:
                       shouldAutoSwitch && prev.activeTab === "signature"
                         ? "prompt"
@@ -766,7 +837,7 @@
             updateState((prev) => {
               if (
                 nextTab !== "signature" && nextTab !== "prompt" &&
-                nextTab !== "final"
+                nextTab !== "final" && nextTab !== "output"
               ) return prev;
               return mergeState(prev, { activeTab: nextTab });
             });
@@ -783,14 +854,13 @@
                 key !== "End"
               ) return;
               event.preventDefault();
-              const order = ["signature", "prompt", "final"];
+              const order = ["signature", "prompt", "final", "output"];
               const currentIndex = order.indexOf(state.activeTab);
               let nextIndex = currentIndex;
               if (key === "Home") nextIndex = 0;
               if (key === "End") nextIndex = order.length - 1;
               if (key === "ArrowLeft") {
-                nextIndex = (currentIndex - 1 + order.length) %
-                  order.length;
+                nextIndex = (currentIndex - 1 + order.length) % order.length;
               }
               if (key === "ArrowRight") {
                 nextIndex = (currentIndex + 1) % order.length;
@@ -801,6 +871,7 @@
                 signature: elements.tabSignature,
                 prompt: elements.tabPrompt,
                 final: elements.tabFinal,
+                output: elements.tabOutput,
               };
               const focusEl = tabElements[next];
               if (focusEl && typeof focusEl.focus === "function") {
@@ -812,6 +883,7 @@
           wireTab(elements.tabSignature, "signature");
           wireTab(elements.tabPrompt, "prompt");
           wireTab(elements.tabFinal, "final");
+          wireTab(elements.tabOutput, "output");
         };
 
         if (document.readyState === "loading") {
@@ -867,7 +939,7 @@
 
       <section class="panel" aria-labelledby="enhanced-label">
         <div class="label-row">
-          <label id="enhanced-label">Enhanced Prompt</label>
+          <label id="enhanced-label">Pipeline Output</label>
           <button
             type="button"
             class="copy"
@@ -879,25 +951,25 @@
             Copy
           </button>
         </div>
-        <div class="tabs" role="tablist" aria-label="Enhanced prompt views">
+        <div class="tabs" role="tablist" aria-label="Pipeline output views">
           <button
             type="button"
             class="tab"
             id="tab-signature"
             role="tab"
-            aria-selected="true"
+            aria-selected="false"
             aria-controls="panel-signature"
+            tabindex="-1"
           >
-            DSPy Signature
+            Prompt IR
           </button>
           <button
             type="button"
             class="tab"
             id="tab-prompt"
             role="tab"
-            aria-selected="false"
+            aria-selected="true"
             aria-controls="panel-prompt"
-            tabindex="-1"
           >
             Enhanced Prompt
           </button>
@@ -912,17 +984,29 @@
           >
             Final Prompt
           </button>
+          <button
+            type="button"
+            class="tab"
+            id="tab-output"
+            role="tab"
+            aria-selected="false"
+            aria-controls="panel-output"
+            tabindex="-1"
+          >
+            Model Output
+          </button>
         </div>
         <div
           id="panel-signature"
           class="tabpanel"
           role="tabpanel"
           aria-labelledby="tab-signature"
+          hidden
         >
           <textarea
             id="signature-output"
             readonly
-            placeholder="The DSPy signature (IR structure) will appear here."
+            placeholder="The synthesized prompt IR (role, objective, constraints, etc.) will appear here."
           ></textarea>
         </div>
         <div
@@ -930,12 +1014,11 @@
           class="tabpanel"
           role="tabpanel"
           aria-labelledby="tab-prompt"
-          hidden
         >
           <textarea
             id="enhanced-output"
             readonly
-            placeholder="The final enhanced prompt ready for the model will appear here."
+            placeholder="The enhanced prompt that will be sent to the model will appear here."
           ></textarea>
         </div>
         <div
@@ -945,10 +1028,36 @@
           aria-labelledby="tab-final"
           hidden
         >
+          <div class="stack">
+            <div>
+              <label for="final-system-output">System Prompt (exact)</label>
+              <textarea
+                id="final-system-output"
+                readonly
+                placeholder="The exact system prompt sent to the model will appear here."
+              ></textarea>
+            </div>
+            <div>
+              <label for="final-user-output">User Prompt (exact)</label>
+              <textarea
+                id="final-user-output"
+                readonly
+                placeholder="The exact user prompt sent to the model will appear here."
+              ></textarea>
+            </div>
+          </div>
+        </div>
+        <div
+          id="panel-output"
+          class="tabpanel"
+          role="tabpanel"
+          aria-labelledby="tab-output"
+          hidden
+        >
           <textarea
-            id="final-output"
+            id="model-output"
             readonly
-            placeholder="The model response (mock data) will appear here."
+            placeholder="The model's generated answer will appear here."
           ></textarea>
         </div>
         <div class="feedback" id="copy-feedback" aria-live="polite"></div>
