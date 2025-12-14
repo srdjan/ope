@@ -210,6 +210,28 @@ export const DOMAIN_PATTERNS: ReadonlyArray<DomainPattern> = [
     ],
     weight: 1,
   },
+  {
+    domain: "specification",
+    keywords: [
+      "user story",
+      "acceptance criteria",
+      "feature",
+      "scenario",
+      "requirements",
+      "api contract",
+      "data model",
+      "edge case",
+      "test scenario",
+    ],
+    patterns: [
+      /\bas\s+a\s+\w+/i, // "As a user/customer/admin"
+      /\bi\s+want\s+(?:to\s+)?/i, // "I want to..."
+      /\bso\s+that\s+/i, // "so that I can..."
+      /\bgiven\s+.+when\s+.+then/i, // BDD format
+      /\b(?:generate|create)\s+(?:a\s+)?(?:spec|specification)/i,
+    ],
+    weight: 1.5, // Higher priority for user story detection
+  },
 ];
 
 /**
@@ -282,6 +304,15 @@ export const DOMAIN_EXAMPLES: ReadonlyMap<
       {
         user: "What is peer review?",
         assistant: '{"answer": "Peer review is a scholarly evaluation process where experts in a field assess the quality, validity, and significance of academic work before publication. It serves as a quality control mechanism in scientific and academic publishing, helping ensure research meets methodological standards and contributes meaningfully to the field.", "citations": ["unknown"]}',
+      },
+    ],
+  ],
+  [
+    "specification",
+    [
+      {
+        user: "As a user, I want to log in with email and password",
+        assistant: '{"answer": "# Specification: User Login\\n\\n## API Contract\\nPOST /api/v1/auth/login\\n\\n## Data Model\\nUser { id, email, passwordHash, lastLoginAt }\\n\\n## Acceptance Criteria\\n1. Valid credentials return JWT token\\n2. Invalid credentials return 401\\n3. Account lockout after 5 failed attempts\\n\\n## Edge Cases\\n- Expired password, Locked account, Concurrent sessions\\n\\n## Test Scenarios\\n| Given | When | Then |\\n|-------|------|------|\\n| Valid user | Login | 200 + token |", "citations": ["https://owasp.org/www-community/controls/Session_Management"]}',
       },
     ],
   ],

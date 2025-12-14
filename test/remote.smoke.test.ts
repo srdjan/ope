@@ -78,11 +78,11 @@ async function callGenerate(payload: {
     duration: `${duration}ms`,
   });
 
-  // Log enhanced prompts (compiled system and user prompts)
-  if (result.meta?.compiled) {
-    logTest(`[${testName || "TEST"}] Enhanced prompts (OPE output)`, {
-      system: result.meta.compiled.system,
-      user: result.meta.compiled.user,
+  // Log enhanced prompts (DSPy signature)
+  if (result.meta?.signature) {
+    logTest(`[${testName || "TEST"}] DSPy signature (OPE output)`, {
+      system: result.meta.signature.system,
+      user: result.meta.signature.user,
     });
   }
 
@@ -123,7 +123,7 @@ Deno.test("Remote OPE - Basic generation request", async () => {
   assertExists(result.meta);
   assertExists(result.meta.model);
   assertExists(result.meta.ir);
-  assertExists(result.meta.compiled);
+  assertExists(result.meta.signature);
   assertExists(result.meta.decoding);
 
   // Validate types
@@ -242,20 +242,20 @@ Deno.test("Remote OPE - IR synthesis validation", async () => {
   assertEquals(Array.isArray(ir.style), true);
 });
 
-Deno.test("Remote OPE - Compiled prompt structure", async () => {
+Deno.test("Remote OPE - Signature structure", async () => {
   const result = await callGenerate({
     rawPrompt: "What are prime numbers?",
   });
 
-  // Validate compiled prompt
-  const compiled = result.meta.compiled;
-  assertExists(compiled.system);
-  assertExists(compiled.user);
+  // Validate DSPy signature
+  const signature = result.meta.signature;
+  assertExists(signature.system);
+  assertExists(signature.user);
 
-  assertEquals(typeof compiled.system, "string");
-  assertEquals(typeof compiled.user, "string");
-  assertEquals(compiled.system.length > 0, true);
-  assertEquals(compiled.user.length > 0, true);
+  assertEquals(typeof signature.system, "string");
+  assertEquals(typeof signature.user, "string");
+  assertEquals(signature.system.length > 0, true);
+  assertEquals(signature.user.length > 0, true);
 });
 
 Deno.test("Remote OPE - Error handling: empty prompt", async () => {

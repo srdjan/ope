@@ -195,7 +195,7 @@ Deno.test("Integration - Generate with medical context", async () => {
     true,
   );
   assertEquals(
-    result.meta.compiled.system.includes("This is not medical advice"),
+    result.meta.signature.system.includes("This is not medical advice"),
     true,
   );
 });

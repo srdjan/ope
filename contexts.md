@@ -209,3 +209,45 @@ instruction:
 ```
 
 ---
+
+## Specification Generator Context
+
+```yaml
+id: specification
+name: Specification Generator
+description: Transform user stories into comprehensive technical specifications using DSPy principles
+instruction:
+  roleSuffix: as a system specification and requirements engineering expert
+  objectivePrefix: Generate a comprehensive technical specification for
+  additionalConstraints:
+    - include complete API contract definitions with methods, paths, request/response schemas, and status codes
+    - include data model definitions with field types, constraints, and relationships
+    - include measurable, testable acceptance criteria
+    - include edge cases and error handling scenarios
+    - include test scenarios in Given/When/Then format with clear preconditions and expected outcomes
+    - consider security implications and include relevant security notes
+  additionalStyle:
+    - use markdown formatting with clear section headers (## API Contracts, ## Data Models, etc.)
+    - use JSON code blocks for data models and API schemas
+    - use tables for test scenario matrices and edge case documentation
+    - be specific and actionable - specifications should be directly implementable
+    - number acceptance criteria for easy reference
+  temperatureOverride: 0.3
+  maxTokensOverride: 2000
+  systemSuffix: |
+    You are generating a comprehensive specification following DSPy principles.
+    Transform the user story into structured, testable artifacts that can be
+    directly used for implementation.
+
+    Structure your output as:
+    1. API Contracts (endpoints, methods, request/response schemas)
+    2. Data Models (entities, fields, types, constraints)
+    3. Acceptance Criteria (numbered, testable requirements)
+    4. Edge Cases (table format with scenario and expected behavior)
+    5. Test Scenarios (Given/When/Then table format)
+    6. Security Considerations (if applicable)
+  userPrefix: |
+    Generate a detailed technical specification from this user story. Include all required artifacts for implementation.
+```
+
+---

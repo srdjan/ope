@@ -25,8 +25,15 @@ deno task gen:cloud   # Test with cloud adapter (requires env vars)
 deno task call 'JSON' # Custom API call with JSON payload
 
 # Testing
-deno test -A          # Run all tests
-deno task test:remote # Run remote smoke tests against deployed instance
+deno test -A                           # Run all tests
+deno test -A test/smoke.test.ts        # Run a single test file
+deno task test:remote                  # Run remote smoke tests against deployed instance
+VERBOSE=true deno task test:remote     # Remote tests with full response bodies
+
+# Code quality
+deno lint             # Lint code
+deno fmt              # Format code
+deno check src/       # Type-check without running
 ```
 
 ## Environment Variables
@@ -261,6 +268,12 @@ defaults.
 - `educational` - Clear explanations with examples
 - `creative` - Higher temperature (0.8) for creative writing
 - `technical` - Technical documentation best practices
+
+## Web UI
+
+A minimal HTMX-based web interface is served at `/` from
+[ui/public/index.html](ui/public/index.html). It provides interactive prompt
+enhancement with loading states and copy-to-clipboard functionality.
 
 ## API
 

@@ -68,8 +68,10 @@ export type FinalResponse = {
   };
   readonly meta: {
     readonly model: ModelId;
+    readonly prompt: string; // The actual enhanced prompt (primary view)
     readonly ir: PromptIR;
-    readonly compiled: {
+    readonly signature: {
+      // DSPy compiled format (secondary view)
       readonly system: SystemPrompt;
       readonly user: UserPrompt;
     };

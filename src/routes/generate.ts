@@ -15,6 +15,7 @@ import {
   JSON_HEADERS,
   mapAdapterErrorToHttpResponse,
 } from "../lib/httpErrors.ts";
+import type { EnhancementResult } from "../types.ts";
 
 export async function handleGenerate(
   body: unknown,
@@ -83,7 +84,8 @@ export async function handleGenerate(
   // Stage 0: Enhance (NEW - runs before analyze)
   const enhanceEnd = logStage(logger, "enhance");
   const enhanceMode = request.enhance ?? "rules"; // Default to rules-based enhancement
-  const enhancement = enhancePrompt(request.rawPrompt, enhanceMode);
+  const baseEnhancement = enhancePrompt(request.rawPrompt, enhanceMode);
+  const enhancement = ensureDemoEnhancedPromptAlways(baseEnhancement, cfg);
   enhanceEnd({
     mode: enhanceMode,
     detectedDomain: enhancement.analysis.detectedDomain,
@@ -117,9 +119,10 @@ export async function handleGenerate(
   });
 
   // Stage 2: Synthesize (with context and suggested examples from enhancement)
+  // Use baseEnhancement.enhancedPrompt (actual enhancements) not the demo-wrapped version
   const synthesizeEnd = logStage(logger, "synthesize");
   const ir = synthesize(
-    enhancement.enhancedPrompt,
+    baseEnhancement.enhancedPrompt,
     analysis,
     contextInstr,
     enhancement.analysis.suggestedExamples,
@@ -134,8 +137,9 @@ export async function handleGenerate(
   });
 
   // Stage 3: Compile (with context and enhanced prompt)
+  // Use baseEnhancement.enhancedPrompt to avoid double "TASK:" prefix
   const compileEnd = logStage(logger, "compile");
-  const compiled = compileIR(ir2, enhancement.enhancedPrompt, contextInstr);
+  const compiled = compileIR(ir2, baseEnhancement.enhancedPrompt, contextInstr);
   compileEnd({
     systemPromptLength: compiled.system.length,
     userPromptLength: compiled.user.length,
@@ -219,8 +223,9 @@ export async function handleGenerate(
     output: validationResult.value,
     meta: {
       model: decision.model,
+      prompt: enhancement.enhancedPrompt, // The actual prompt (primary view)
       ir: ir2,
-      compiled: { system: compiled.system, user: compiled.user },
+      signature: { system: compiled.system, user: compiled.user }, // DSPy format (secondary view)
       decoding: compiled.decoding,
       validation: validationMetrics,
       ...(hasEnhancements ? { enhancement } : {}),
@@ -237,4 +242,85 @@ export async function handleGenerate(
   return new Response(JSON.stringify(result, null, 2), {
     headers: JSON_HEADERS,
   });
+}
+
+function ensureDemoEnhancedPromptAlways(
+  enhancement: EnhancementResult,
+  cfg: ConfigPort,
+): EnhancementResult {
+  const envFlag = Deno.env.get("OPE_ALWAYS_ENHANCE_PROMPT");
+  const alwaysEnhance = envFlag === "true" ? true : envFlag === "false"
+    ? false
+    : cfg.isMockMode();
+
+  if (!alwaysEnhance) return enhancement;
+
+  const enhancedPrompt = formatEnhancedPromptDisplay(enhancement);
+  const alreadyTagged = enhancement.enhancementsApplied.includes("display_formatted");
+
+  return {
+    ...enhancement,
+    enhancedPrompt,
+    enhancementsApplied: alreadyTagged
+      ? enhancement.enhancementsApplied
+      : [...enhancement.enhancementsApplied, "display_formatted"],
+  };
+}
+
+/**
+ * Format the enhanced prompt for display, showing what enhancements were applied.
+ */
+function formatEnhancedPromptDisplay(enhancement: EnhancementResult): string {
+  const { analysis, enhancedPrompt, enhancementsApplied } = enhancement;
+  const lines: string[] = [];
+
+  // Start with the enhanced prompt text
+  lines.push(normalizePromptWhitespace(enhancedPrompt));
+
+  // Build enhancements section if any were applied
+  const enhancements: string[] = [];
+
+  if (analysis.detectedDomain) {
+    const domainNames: Record<string, string> = {
+      code: "Software Development",
+      medical: "Medical/Health",
+      legal: "Legal",
+      academic: "Academic/Research",
+      business: "Business",
+      educational: "Educational",
+      creative: "Creative Writing",
+      technical: "Technical Documentation",
+    };
+    const domainName = domainNames[analysis.detectedDomain] ?? analysis.detectedDomain;
+    enhancements.push(`Domain: ${domainName}`);
+  }
+
+  if (enhancementsApplied.includes("structured_compound_question")) {
+    enhancements.push("Structured multi-part question");
+  }
+
+  if (enhancementsApplied.includes("clarity_improvement")) {
+    enhancements.push("Clarity improved");
+  }
+
+  if (analysis.suggestedExamples.length > 0) {
+    enhancements.push(`${analysis.suggestedExamples.length} few-shot example(s) added`);
+  }
+
+  // Add enhancements section if any
+  if (enhancements.length > 0) {
+    lines.push("");
+    lines.push("─── Enhancements ───");
+    enhancements.forEach((e) => lines.push(`• ${e}`));
+  }
+
+  return lines.join("\n");
+}
+
+function normalizePromptWhitespace(prompt: string): string {
+  return prompt
+    .replaceAll("\r\n", "\n")
+    .replaceAll("\r", "\n")
+    .trim()
+    .replace(/\n{3,}/g, "\n\n");
 }

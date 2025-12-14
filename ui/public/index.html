@@ -91,14 +91,54 @@
         gap: 12px;
       }
 
-      .label-row label {
-        margin: 0;
-      }
+	      .label-row label {
+	        margin: 0;
+	      }
 
-      textarea {
-        width: 100%;
-        min-height: 200px;
-        padding: 16px 18px;
+	      .tabs {
+	        display: flex;
+	        gap: 10px;
+	        border-bottom: 1px solid var(--border);
+	        padding-bottom: 6px;
+	      }
+
+	      .tab {
+	        appearance: none;
+	        border: 1px solid transparent;
+	        background: transparent;
+	        color: var(--muted);
+	        font: inherit;
+	        font-weight: 500;
+	        padding: 8px 10px;
+	        border-radius: 10px;
+	        cursor: pointer;
+	        transition: background 120ms ease, color 120ms ease, border 120ms ease;
+	      }
+
+	      .tab:hover {
+	        background: rgba(47, 111, 237, 0.08);
+	        color: var(--text);
+	      }
+
+	      .tab[aria-selected="true"] {
+	        color: var(--text);
+	        border-color: rgba(47, 111, 237, 0.35);
+	        background: rgba(47, 111, 237, 0.12);
+	      }
+
+	      .tab:focus-visible {
+	        outline: none;
+	        box-shadow: 0 0 0 3px rgba(47, 111, 237, 0.18);
+	      }
+
+	      .tabpanel[hidden] {
+	        display: none;
+	      }
+
+	      textarea {
+	        width: 100%;
+	        min-height: 200px;
+	        padding: 16px 18px;
         font-family: "JetBrains Mono", "SFMono-Regular", ui-monospace, Menlo,
           Consolas, "Liberation Mono", monospace;
         font-size: 0.95rem;
@@ -252,56 +292,102 @@
     <script defer src="https://unpkg.com/htmx.org@1.9.12"></script>
     <script defer src="https://unpkg.com/htmx.org@1.9.12/dist/ext/json-enc.js"></script>
     <script>
-      (() => {
-        const enhanceFormId = "enhance-form";
-        const outputId = "enhanced-output";
-        const statusId = "status-text";
-        const errorId = "error-message";
-        const copyButtonId = "copy-button";
-        const copyFeedbackId = "copy-feedback";
+	      (() => {
+	        const enhanceFormId = "enhance-form";
+	        const promptOutputId = "enhanced-output";
+	        const signatureOutputId = "signature-output";
+	        const statusId = "status-text";
+	        const errorId = "error-message";
+	        const copyButtonId = "copy-button";
+	        const copyFeedbackId = "copy-feedback";
+	        const tabSignatureId = "tab-signature";
+	        const tabPromptId = "tab-prompt";
+	        const tabFinalId = "tab-final";
+	        const panelSignatureId = "panel-signature";
+	        const panelPromptId = "panel-prompt";
+	        const panelFinalId = "panel-final";
+	        const finalOutputId = "final-output";
 
-        const createState = (overrides = {}) =>
-          Object.freeze({
-            isLoading: false,
-            answer: "",
-            error: null,
-            copyFeedback: "",
-            ...overrides,
-          });
+	        const createState = (overrides = {}) =>
+	          Object.freeze({
+	            isLoading: false,
+	            activeTab: "signature",
+	            signatureText: "",
+	            enhancedPromptText: "",
+	            finalPromptText: "",
+	            error: null,
+	            copyFeedback: "",
+	            ...overrides,
+	          });
 
         const mergeState = (prev, patch) => createState({ ...prev, ...patch });
 
-        const parseJsonSafe = (raw) => {
-          try {
-            return raw ? JSON.parse(raw) : null;
-          } catch {
-            return null;
-          }
-        };
+	        const parseJsonSafe = (raw) => {
+	          try {
+	            return raw ? JSON.parse(raw) : null;
+	          } catch {
+	            return null;
+	          }
+	        };
 
-        const deriveAnswer = (payload) => {
-          // Display only the enhanced user prompt (the actual prompt to send to LLM)
-          if (payload && payload.meta && payload.meta.compiled) {
-            const system = payload.meta.compiled.system || "";
-            const user = payload.meta.compiled.user || "";
-            // Combine system and user into a single enhanced prompt
-            if (system && user) {
-              return `${system}\n\n${user}`;
-            }
-            // If only user prompt exists
-            if (user) {
-              return user;
-            }
-          }
-          // Fallback to answer if compiled prompts not available
-          return payload && payload.output && typeof payload.output.answer === "string"
-            ? payload.output.answer
-            : "";
-        };
+	        const deriveSignatureText = (payload) => {
+	          // DSPy Signature = IR structure (role, objective, constraints, etc.)
+	          const ir = payload && payload.meta && payload.meta.ir ? payload.meta.ir : null;
+	          if (!ir) return "";
 
-        const deriveErrorMessage = (payload, status) => {
-          if (payload) {
-            if (typeof payload.detail === "string" && payload.detail.trim().length) {
+	          const lines = [];
+	          if (ir.role) lines.push(`ROLE: ${ir.role}`);
+	          if (ir.objective) lines.push(`OBJECTIVE: ${ir.objective}`);
+	          if (ir.constraints && ir.constraints.length) {
+	            lines.push(`CONSTRAINTS:\n${ir.constraints.map(c => `  • ${c}`).join("\n")}`);
+	          }
+	          if (ir.style && ir.style.length) {
+	            lines.push(`STYLE:\n${ir.style.map(s => `  • ${s}`).join("\n")}`);
+	          }
+	          if (ir.steps && ir.steps.length) {
+	            lines.push(`STEPS:\n${ir.steps.map((s, i) => `  ${i + 1}. ${s}`).join("\n")}`);
+	          }
+	          if (ir.examples && ir.examples.length) {
+	            lines.push(`EXAMPLES: ${ir.examples.length} few-shot example(s)`);
+	          }
+	          if (ir.outputSchema) {
+	            lines.push(`OUTPUT SCHEMA: ${JSON.stringify(ir.outputSchema)}`);
+	          }
+	          return lines.join("\n\n");
+	        };
+
+	        const deriveEnhancedPromptText = (payload) => {
+	          // Enhanced Prompt = final compiled prompts (system + user) ready for model
+	          const signature = payload && payload.meta && payload.meta.signature
+	            ? payload.meta.signature
+	            : null;
+	          const system = signature && typeof signature.system === "string"
+	            ? signature.system
+	            : "";
+	          const user = signature && typeof signature.user === "string"
+	            ? signature.user
+	            : "";
+	          if (system && user) return `${system}\n\n${user}`;
+	          return user || system || "";
+	        };
+
+	        const deriveFinalPromptText = (payload) => {
+	          // Final Prompt = model response (mock data)
+	          if (payload && payload.output && typeof payload.output.answer === "string") {
+	            return payload.output.answer;
+	          }
+	          return "";
+	        };
+
+	        const getActiveTabText = (currentState) => {
+	          if (currentState.activeTab === "prompt") return currentState.enhancedPromptText;
+	          if (currentState.activeTab === "final") return currentState.finalPromptText;
+	          return currentState.signatureText;
+	        };
+
+	        const deriveErrorMessage = (payload, status) => {
+	          if (payload) {
+	            if (typeof payload.detail === "string" && payload.detail.trim().length) {
               return payload.detail.trim();
             }
             if (typeof payload.error === "string" && payload.error.trim().length) {
@@ -320,33 +406,52 @@
             : "We could not enhance that prompt. Double-check the text and try once more.";
         };
 
-        const init = () => {
-          const elements = Object.freeze({
-            form: document.getElementById(enhanceFormId),
-            output: document.getElementById(outputId),
-            status: document.getElementById(statusId),
-            error: document.getElementById(errorId),
-            submit: document.querySelector(`#${enhanceFormId} button[type="submit"]`),
-            copy: document.getElementById(copyButtonId),
-            feedback: document.getElementById(copyFeedbackId),
-          });
+	        const init = () => {
+	          const elements = Object.freeze({
+	            form: document.getElementById(enhanceFormId),
+	            signatureOutput: document.getElementById(signatureOutputId),
+	            promptOutput: document.getElementById(promptOutputId),
+	            finalOutput: document.getElementById(finalOutputId),
+	            status: document.getElementById(statusId),
+	            error: document.getElementById(errorId),
+	            submit: document.querySelector(`#${enhanceFormId} button[type="submit"]`),
+	            copy: document.getElementById(copyButtonId),
+	            feedback: document.getElementById(copyFeedbackId),
+	            tabSignature: document.getElementById(tabSignatureId),
+	            tabPrompt: document.getElementById(tabPromptId),
+	            tabFinal: document.getElementById(tabFinalId),
+	            panelSignature: document.getElementById(panelSignatureId),
+	            panelPrompt: document.getElementById(panelPromptId),
+	            panelFinal: document.getElementById(panelFinalId),
+	          });
 
-          if (!elements.form || !elements.submit || !elements.output) {
-            console.warn(
-              "OPE UI: missing required elements. UI will not function.",
-            );
-            return;
-          }
+	          if (
+	            !elements.form || !elements.submit || !elements.signatureOutput ||
+	            !elements.promptOutput
+	          ) {
+	            console.warn(
+	              "OPE UI: missing required elements. UI will not function.",
+	            );
+	            return;
+	          }
 
           let state = createState();
           let clearCopyFeedbackTimer = 0;
 
-          const render = (currentState) => {
-            const { isLoading, answer, error, copyFeedback } = currentState;
+	          const render = (currentState) => {
+	            const {
+	              isLoading,
+	              activeTab,
+	              signatureText,
+	              enhancedPromptText,
+	              finalPromptText,
+	              error,
+	              copyFeedback,
+	            } = currentState;
 
-            if (elements.submit) {
-              elements.submit.disabled = isLoading;
-              if (isLoading) {
+	            if (elements.submit) {
+	              elements.submit.disabled = isLoading;
+	              if (isLoading) {
                 elements.submit.setAttribute("data-loading", "true");
               } else {
                 elements.submit.removeAttribute("data-loading");
@@ -358,28 +463,57 @@
               elements.status.hidden = !isLoading;
             }
 
-            if (elements.error) {
-              if (error) {
-                elements.error.textContent = error;
-                elements.error.hidden = false;
-              } else {
-                elements.error.textContent = "";
-                elements.error.hidden = true;
-              }
-            }
+	            if (elements.error) {
+	              if (error) {
+	                elements.error.textContent = error;
+	                elements.error.hidden = false;
+	              } else {
+	                elements.error.textContent = "";
+	                elements.error.hidden = true;
+	              }
+	            }
 
-            if (elements.output) {
-              elements.output.value = answer;
-            }
+	            if (elements.signatureOutput) elements.signatureOutput.value = signatureText;
+	            if (elements.promptOutput) elements.promptOutput.value = enhancedPromptText;
+	            if (elements.finalOutput) elements.finalOutput.value = finalPromptText;
 
-            if (elements.copy) {
-              elements.copy.disabled = !answer || isLoading;
-            }
+	            // Tab visibility logic for three tabs
+	            const isSignature = activeTab === "signature";
+	            const isPrompt = activeTab === "prompt";
+	            const isFinal = activeTab === "final";
 
-            if (elements.feedback) {
-              elements.feedback.textContent = copyFeedback;
-            }
-          };
+	            if (elements.panelSignature) elements.panelSignature.hidden = !isSignature;
+	            if (elements.panelPrompt) elements.panelPrompt.hidden = !isPrompt;
+	            if (elements.panelFinal) elements.panelFinal.hidden = !isFinal;
+
+	            if (elements.tabSignature) {
+	              elements.tabSignature.setAttribute("aria-selected", isSignature ? "true" : "false");
+	              elements.tabSignature.tabIndex = isSignature ? 0 : -1;
+	            }
+	            if (elements.tabPrompt) {
+	              elements.tabPrompt.setAttribute("aria-selected", isPrompt ? "true" : "false");
+	              elements.tabPrompt.tabIndex = isPrompt ? 0 : -1;
+	            }
+	            if (elements.tabFinal) {
+	              elements.tabFinal.setAttribute("aria-selected", isFinal ? "true" : "false");
+	              elements.tabFinal.tabIndex = isFinal ? 0 : -1;
+	            }
+
+	            if (elements.copy) {
+	              const activeText = getActiveTabText(currentState);
+	              elements.copy.disabled = !activeText || isLoading;
+	              const ariaLabels = {
+	                signature: "Copy DSPy signature to clipboard",
+	                prompt: "Copy enhanced prompt to clipboard",
+	                final: "Copy final prompt to clipboard",
+	              };
+	              elements.copy.setAttribute("aria-label", ariaLabels[activeTab] || ariaLabels.signature);
+	            }
+
+	            if (elements.feedback) {
+	              elements.feedback.textContent = copyFeedback;
+	            }
+	          };
 
           const replaceState = (next) => {
             state = createState(next);
@@ -409,21 +543,30 @@
             );
           });
 
-          document.body.addEventListener("htmx:afterRequest", (event) => {
-            if (!isEnhanceForm(event.target)) return;
-            const { xhr, successful } = event.detail;
-            const payload = parseJsonSafe(xhr.responseText);
+	          document.body.addEventListener("htmx:afterRequest", (event) => {
+	            if (!isEnhanceForm(event.target)) return;
+	            const { xhr, successful } = event.detail;
+	            const payload = parseJsonSafe(xhr.responseText);
 
-            if (successful) {
-              updateState((prev) =>
-                mergeState(prev, {
-                  isLoading: false,
-                  answer: deriveAnswer(payload),
-                  error: null,
-                })
-              );
-              return;
-            }
+	            if (successful) {
+	              const signatureText = deriveSignatureText(payload);
+	              const enhancedPromptText = deriveEnhancedPromptText(payload);
+	              const finalPromptText = deriveFinalPromptText(payload);
+	              const shouldAutoSwitch = !signatureText && !!enhancedPromptText;
+	              updateState((prev) =>
+	                mergeState(prev, {
+	                  isLoading: false,
+	                  signatureText,
+	                  enhancedPromptText,
+	                  finalPromptText,
+	                  activeTab: shouldAutoSwitch && prev.activeTab === "signature"
+	                    ? "prompt"
+	                    : prev.activeTab,
+	                  error: null,
+	                })
+	              );
+	              return;
+	            }
 
             updateState((prev) =>
               mergeState(prev, {
@@ -454,17 +597,18 @@
             );
           });
 
-          if (elements.copy) {
-            elements.copy.addEventListener("click", async () => {
-              if (!state.answer || state.isLoading) {
-                return;
-              }
-              try {
-                await navigator.clipboard.writeText(state.answer);
-                updateState((prev) =>
-                  mergeState(prev, { copyFeedback: "Copied to clipboard." })
-                );
-                resetCopyFeedbackLater();
+	          if (elements.copy) {
+	            elements.copy.addEventListener("click", async () => {
+	              const activeText = getActiveTabText(state);
+	              if (!activeText || state.isLoading) {
+	                return;
+	              }
+	              try {
+	                await navigator.clipboard.writeText(activeText);
+	                updateState((prev) =>
+	                  mergeState(prev, { copyFeedback: "Copied to clipboard." })
+	                );
+	                resetCopyFeedbackLater();
               } catch (_err) {
                 updateState((prev) =>
                   mergeState(prev, {
@@ -472,13 +616,53 @@
                       "Unable to copy to clipboard. Your browser may not allow it.",
                   })
                 );
-              }
-            });
-          }
-        };
+	              }
+	            });
+	          }
 
-        if (document.readyState === "loading") {
-          document.addEventListener("DOMContentLoaded", init, { once: true });
+	          const setActiveTab = (nextTab) => {
+	            updateState((prev) => {
+	              if (nextTab !== "signature" && nextTab !== "prompt" && nextTab !== "final") return prev;
+	              return mergeState(prev, { activeTab: nextTab });
+	            });
+	          };
+
+	          const wireTab = (el, tabValue) => {
+	            if (!el) return;
+	            el.addEventListener("click", () => setActiveTab(tabValue));
+	            el.addEventListener("keydown", (event) => {
+	              const key = event.key;
+	              if (
+	                key !== "ArrowLeft" && key !== "ArrowRight" && key !== "Home" &&
+	                key !== "End"
+	              ) return;
+	              event.preventDefault();
+	              const order = ["signature", "prompt", "final"];
+	              const currentIndex = order.indexOf(state.activeTab);
+	              let nextIndex = currentIndex;
+	              if (key === "Home") nextIndex = 0;
+	              if (key === "End") nextIndex = order.length - 1;
+	              if (key === "ArrowLeft") nextIndex = (currentIndex - 1 + order.length) % order.length;
+	              if (key === "ArrowRight") nextIndex = (currentIndex + 1) % order.length;
+	              const next = order[nextIndex];
+	              setActiveTab(next);
+	              const tabElements = {
+	                signature: elements.tabSignature,
+	                prompt: elements.tabPrompt,
+	                final: elements.tabFinal,
+	              };
+	              const focusEl = tabElements[next];
+	              if (focusEl && typeof focusEl.focus === "function") focusEl.focus();
+	            });
+	          };
+
+	          wireTab(elements.tabSignature, "signature");
+	          wireTab(elements.tabPrompt, "prompt");
+	          wireTab(elements.tabFinal, "final");
+	        };
+
+	        if (document.readyState === "loading") {
+	          document.addEventListener("DOMContentLoaded", init, { once: true });
         } else {
           init();
         }
@@ -520,27 +704,94 @@
         </form>
       </section>
 
-      <section class="panel" aria-labelledby="enhanced-label">
-        <div class="label-row">
-          <label id="enhanced-label" for="enhanced-output">Enhanced Prompt</label>
-          <button
-            type="button"
-            class="copy"
-            id="copy-button"
-            aria-live="polite"
-            aria-label="Copy enhanced prompt to clipboard"
-            disabled
-          >
-            Copy
-          </button>
-        </div>
-        <textarea
-          id="enhanced-output"
-          readonly
-          placeholder="Your enhanced prompt will appear here."
-        ></textarea>
-        <div class="feedback" id="copy-feedback" aria-live="polite"></div>
-      </section>
+	      <section class="panel" aria-labelledby="enhanced-label">
+	        <div class="label-row">
+	          <label id="enhanced-label">Enhanced Prompt</label>
+	          <button
+	            type="button"
+	            class="copy"
+	            id="copy-button"
+	            aria-live="polite"
+	            aria-label="Copy enhanced prompt to clipboard"
+	            disabled
+	          >
+	            Copy
+	          </button>
+	        </div>
+	        <div class="tabs" role="tablist" aria-label="Enhanced prompt views">
+	          <button
+	            type="button"
+	            class="tab"
+	            id="tab-signature"
+	            role="tab"
+	            aria-selected="true"
+	            aria-controls="panel-signature"
+	          >
+	            DSPy Signature
+	          </button>
+	          <button
+	            type="button"
+	            class="tab"
+	            id="tab-prompt"
+	            role="tab"
+	            aria-selected="false"
+	            aria-controls="panel-prompt"
+	            tabindex="-1"
+	          >
+	            Enhanced Prompt
+	          </button>
+	          <button
+	            type="button"
+	            class="tab"
+	            id="tab-final"
+	            role="tab"
+	            aria-selected="false"
+	            aria-controls="panel-final"
+	            tabindex="-1"
+	          >
+	            Final Prompt
+	          </button>
+	        </div>
+	        <div
+	          id="panel-signature"
+	          class="tabpanel"
+	          role="tabpanel"
+	          aria-labelledby="tab-signature"
+	        >
+	          <textarea
+	            id="signature-output"
+	            readonly
+	            placeholder="The DSPy signature (IR structure) will appear here."
+	          ></textarea>
+	        </div>
+	        <div
+	          id="panel-prompt"
+	          class="tabpanel"
+	          role="tabpanel"
+	          aria-labelledby="tab-prompt"
+	          hidden
+	        >
+	          <textarea
+	            id="enhanced-output"
+	            readonly
+	            placeholder="The final enhanced prompt ready for the model will appear here."
+	          ></textarea>
+	        </div>
+	        <div
+	          id="panel-final"
+	          class="tabpanel"
+	          role="tabpanel"
+	          aria-labelledby="tab-final"
+	          hidden
+	        >
+	          <textarea
+	            id="final-output"
+	            readonly
+	            placeholder="The model response (mock data) will appear here."
+	          ></textarea>
+	        </div>
+	        <div class="feedback" id="copy-feedback" aria-live="polite"></div>
+	      </section>
 
       <div class="error" id="error-message" role="alert" hidden></div>
     </main>

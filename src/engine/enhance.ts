@@ -99,6 +99,77 @@ export function getSuggestedExamples(
 }
 
 /**
+ * User story detection result.
+ */
+export type UserStoryInfo = {
+  readonly isUserStory: boolean;
+  readonly actor?: string;
+  readonly action?: string;
+  readonly benefit?: string;
+};
+
+/**
+ * Detect if prompt is a user story and extract its components.
+ * Handles formats like: "As a [actor], I want [action] so that [benefit]"
+ */
+export function detectUserStory(rawPrompt: string): UserStoryInfo {
+  // Standard user story pattern
+  const userStoryPattern =
+    /as\s+a\s+([^,]+),?\s*i\s+want\s+(?:to\s+)?([^,]+?)(?:,?\s*so\s+that\s+(.+))?$/i;
+  const match = rawPrompt.match(userStoryPattern);
+
+  if (match) {
+    return {
+      isUserStory: true,
+      actor: match[1]?.trim(),
+      action: match[2]?.trim(),
+      benefit: match[3]?.trim(),
+    };
+  }
+
+  // Simpler "I want to" pattern
+  const simplePattern = /i\s+want\s+(?:to\s+)?(.+)/i;
+  const simpleMatch = rawPrompt.match(simplePattern);
+  if (simpleMatch && rawPrompt.toLowerCase().includes("as a")) {
+    return {
+      isUserStory: true,
+      action: simpleMatch[1]?.trim(),
+    };
+  }
+
+  return { isUserStory: false };
+}
+
+/**
+ * Structure a user story into a specification-ready format.
+ */
+function structureUserStory(rawPrompt: string, info: UserStoryInfo): string {
+  const lines: string[] = [];
+
+  lines.push("Generate a comprehensive specification for this user story:");
+  lines.push("");
+
+  if (info.actor) {
+    lines.push(`**Actor**: ${info.actor}`);
+  }
+  if (info.action) {
+    lines.push(`**Action**: ${info.action}`);
+  }
+  if (info.benefit) {
+    lines.push(`**Benefit**: ${info.benefit}`);
+  }
+
+  lines.push("");
+  lines.push(`**Original**: ${rawPrompt}`);
+  lines.push("");
+  lines.push(
+    "Include: API contracts, data models, acceptance criteria, edge cases, and test scenarios.",
+  );
+
+  return lines.join("\n");
+}
+
+/**
  * Analyze a prompt to extract enhancement-relevant information.
  * Pure function - no side effects.
  */
@@ -223,6 +294,13 @@ export function enhancePrompt(
   // Enhancement 4: Examples suggested (doesn't modify prompt, but populates IR)
   if (analysis.suggestedExamples.length > 0) {
     enhancementsApplied.push("examples_suggested");
+  }
+
+  // Enhancement 5: Structure user stories for specification generation
+  const userStoryInfo = detectUserStory(rawPrompt);
+  if (userStoryInfo.isUserStory) {
+    enhancedPrompt = structureUserStory(rawPrompt, userStoryInfo);
+    enhancementsApplied.push("user_story_structured");
   }
 
   return {
