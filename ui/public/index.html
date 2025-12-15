@@ -14,11 +14,23 @@
         --muted: #5a5a62;
         --accent: #2f6fed;
         --accent-hover: #2154c3;
+        --accent-2: #9c56ff;
         --error: #d63d3d;
         --font-body:
           "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
         --radius: 16px;
         --shadow: 0 12px 32px rgba(34, 43, 68, 0.12);
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0b0b10;
+          --card: #12121b;
+          --border: #2a2a38;
+          --text: #f4f4f7;
+          --muted: rgba(244, 244, 247, 0.68);
+          --shadow: 0 18px 45px rgba(0, 0, 0, 0.45);
+        }
       }
 
       * {
@@ -28,7 +40,18 @@
       body {
         margin: 0;
         min-height: 100vh;
-        background: var(--bg);
+        background:
+          radial-gradient(
+            900px circle at 20% -15%,
+            rgba(47, 111, 237, 0.22),
+            transparent 55%
+          ),
+          radial-gradient(
+            900px circle at 115% 10%,
+            rgba(156, 86, 255, 0.14),
+            transparent 50%
+          ),
+          var(--bg);
         font-family: var(--font-body);
         color: var(--text);
         display: flex;
@@ -46,13 +69,20 @@
 
       header {
         display: flex;
-        flex-direction: column;
-        gap: 8px;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 14px;
         padding: 16px 18px;
         background: var(--card);
         border-radius: var(--radius);
         border: 1px solid var(--border);
         box-shadow: var(--shadow);
+      }
+
+      .brand {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
       }
 
       header h1 {
@@ -68,6 +98,13 @@
         line-height: 1.5;
       }
 
+      .workspace {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 16px;
+        min-height: 0;
+      }
+
       section.panel {
         padding: 18px;
         background: var(--card);
@@ -78,6 +115,31 @@
         flex-direction: column;
         gap: 16px;
         min-height: 0;
+      }
+
+      @media (min-width: 980px) {
+        body {
+          height: 100vh;
+          overflow: hidden;
+          padding: 18px;
+        }
+
+        main {
+          height: 100%;
+          width: min(1240px, 100%);
+        }
+
+        .workspace {
+          grid-template-columns: minmax(360px, 420px) minmax(0, 1fr);
+          flex: 1 1 auto;
+          min-height: 0;
+        }
+
+        #input-panel,
+        #output-panel {
+          min-height: 0;
+          overflow: hidden;
+        }
       }
 
       label {
@@ -203,6 +265,13 @@
         transition: border 120ms ease, box-shadow 120ms ease;
       }
 
+      textarea.prompt-input {
+        font-family: var(--font-body);
+        font-size: 0.95rem;
+        line-height: 1.55;
+        background: rgba(255, 255, 255, 0.86);
+      }
+
       input[type="text"],
       input[type="search"],
       input[type="url"] {
@@ -227,6 +296,20 @@
       textarea[readonly] {
         background: rgba(248, 248, 252, 0.7);
         color: var(--text);
+      }
+
+      @media (prefers-color-scheme: dark) {
+        select,
+        input[type="text"],
+        input[type="search"],
+        input[type="url"],
+        textarea {
+          background: rgba(255, 255, 255, 0.04);
+        }
+
+        textarea[readonly] {
+          background: rgba(255, 255, 255, 0.03);
+        }
       }
 
       textarea::placeholder {
@@ -335,6 +418,153 @@
         font-size: 0.9rem;
       }
 
+      #error-message {
+        max-height: 22vh;
+        overflow: auto;
+      }
+
+      .panel-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .panel-head label {
+        margin: 0;
+      }
+
+      .panel-actions {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+
+      button.ghost {
+        background: transparent;
+        border: 1px solid rgba(90, 90, 98, 0.25);
+        color: var(--text);
+        padding: 0.55rem 1.05rem;
+        border-radius: 999px;
+        box-shadow: none;
+        font-weight: 600;
+      }
+
+      button.ghost:hover {
+        background: rgba(47, 111, 237, 0.08);
+        border-color: rgba(47, 111, 237, 0.35);
+      }
+
+      button.ghost:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+      }
+
+      .output-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+        min-height: 0;
+        flex: 1 1 auto;
+      }
+
+      .output-card {
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 12px 12px 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        min-height: 0;
+        background:
+          linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0.65),
+            rgba(255, 255, 255, 0.35)
+          );
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .output-card {
+          background:
+            linear-gradient(
+              180deg,
+              rgba(255, 255, 255, 0.05),
+              rgba(255, 255, 255, 0.02)
+            );
+        }
+      }
+
+      .output-card-head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .output-card-title {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        min-width: 0;
+      }
+
+      .output-card-title .title {
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        margin: 0;
+        font-size: 0.92rem;
+      }
+
+      .output-card-title .meta {
+        color: var(--muted);
+        font-size: 0.78rem;
+      }
+
+      .output-card textarea {
+        flex: 1 1 auto;
+        min-height: 0;
+        height: 100%;
+        resize: none;
+        background: rgba(255, 255, 255, 0.65);
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .output-card textarea {
+          background: rgba(255, 255, 255, 0.03);
+        }
+      }
+
+      @media (min-width: 980px) {
+        #enhance-form {
+          display: flex;
+          flex-direction: column;
+          min-height: 0;
+          gap: 12px;
+        }
+
+        #raw-prompt {
+          flex: 1 1 auto;
+          min-height: 0;
+          resize: none;
+        }
+
+        #output-panel {
+          display: flex;
+          flex-direction: column;
+        }
+
+        .output-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          grid-template-rows: repeat(3, minmax(0, 1fr));
+        }
+
+        .output-card[data-span="2"] {
+          grid-column: 1 / -1;
+        }
+      }
+
       @media (max-width: 720px) {
         header,
         section.panel {
@@ -363,78 +593,6 @@
 
         .field-grid {
           grid-template-columns: 1fr;
-        }
-      }
-
-      /* Keep everything visible (no page scroll) on common short desktop viewports. */
-      @media (min-width: 721px) and (max-height: 820px) {
-        body {
-          height: 100vh;
-          overflow: hidden;
-          padding-bottom: 16px;
-        }
-
-        main {
-          height: 100%;
-        }
-
-        #input-panel,
-        #output-panel {
-          flex: 1 1 0;
-          overflow: hidden;
-        }
-
-        #output-panel {
-          flex: 1.25 1 0;
-        }
-
-        #enhance-form {
-          display: flex;
-          flex-direction: column;
-          min-height: 0;
-          gap: 12px;
-        }
-
-        #raw-prompt {
-          flex: 1 1 auto;
-          min-height: 0;
-          resize: none;
-        }
-
-        .field-grid {
-          grid-template-columns: repeat(4, minmax(0, 1fr));
-        }
-
-        /* Tab content stretches to fill remaining height inside the panel. */
-        .tabpanel {
-          flex: 1 1 auto;
-          min-height: 0;
-          display: flex;
-          flex-direction: column;
-        }
-
-        .tabpanel textarea {
-          flex: 1 1 auto;
-          min-height: 0;
-          height: 100%;
-          resize: none;
-        }
-
-        #panel-final .stack {
-          flex: 1 1 auto;
-          min-height: 0;
-        }
-
-        #panel-final .stack > div {
-          flex: 1 1 0;
-          min-height: 0;
-          display: flex;
-          flex-direction: column;
-        }
-
-        #error-message {
-          max-height: 20vh;
-          overflow: auto;
         }
       }
 
@@ -496,23 +654,15 @@
         const modelOutputId = "model-output";
         const statusId = "status-text";
         const errorId = "error-message";
-        const copyButtonId = "copy-button";
         const copyFeedbackId = "copy-feedback";
         const contextSelectId = "context-select";
         const contextHintId = "context-hint";
-        const tabSignatureId = "tab-signature";
-        const tabPromptId = "tab-prompt";
-        const tabFinalId = "tab-final";
-        const tabOutputId = "tab-output";
-        const panelSignatureId = "panel-signature";
-        const panelPromptId = "panel-prompt";
-        const panelFinalId = "panel-final";
-        const panelOutputId = "panel-output";
+        const copyAllId = "copy-all";
+        const downloadJsonId = "download-json";
 
         const createState = (overrides = {}) =>
           Object.freeze({
             isLoading: false,
-            activeTab: "prompt",
             signatureText: "",
             enhancedPromptText: "",
             finalSystemText: "",
@@ -520,6 +670,7 @@
             modelOutputText: "",
             error: null,
             copyFeedback: "",
+            lastPayload: null,
             ...overrides,
           });
 
@@ -640,34 +791,6 @@
           return "";
         };
 
-        const getActiveTabText = (currentState) => {
-          if (currentState.activeTab === "signature") {
-            return currentState.signatureText;
-          }
-          if (currentState.activeTab === "prompt") {
-            return currentState.enhancedPromptText;
-          }
-          if (currentState.activeTab === "final") {
-            const system = currentState.finalSystemText ?? "";
-            const user = currentState.finalUserText ?? "";
-            // Copy as a structured payload while preserving exact strings.
-            return JSON.stringify(
-              {
-                messages: [{ role: "system", content: system }, {
-                  role: "user",
-                  content: user,
-                }],
-              },
-              null,
-              2,
-            );
-          }
-          if (currentState.activeTab === "output") {
-            return currentState.modelOutputText;
-          }
-          return "";
-        };
-
         const deriveErrorMessage = (payload, status) => {
           if (payload) {
             if (
@@ -710,18 +833,14 @@
             submit: document.querySelector(
               `#${enhanceFormId} button[type="submit"]`,
             ),
-            copy: document.getElementById(copyButtonId),
             feedback: document.getElementById(copyFeedbackId),
             contextSelect: document.getElementById(contextSelectId),
             contextHint: document.getElementById(contextHintId),
-            tabSignature: document.getElementById(tabSignatureId),
-            tabPrompt: document.getElementById(tabPromptId),
-            tabFinal: document.getElementById(tabFinalId),
-            tabOutput: document.getElementById(tabOutputId),
-            panelSignature: document.getElementById(panelSignatureId),
-            panelPrompt: document.getElementById(panelPromptId),
-            panelFinal: document.getElementById(panelFinalId),
-            panelOutput: document.getElementById(panelOutputId),
+            copyButtons: Array.from(
+              document.querySelectorAll("button.copy[data-copy-target]"),
+            ),
+            copyAll: document.getElementById(copyAllId),
+            downloadJson: document.getElementById(downloadJsonId),
           });
 
           if (
@@ -741,7 +860,6 @@
           const render = (currentState) => {
             const {
               isLoading,
-              activeTab,
               signatureText,
               enhancedPromptText,
               finalSystemText,
@@ -749,6 +867,7 @@
               modelOutputText,
               error,
               copyFeedback,
+              lastPayload,
             } = currentState;
 
             if (elements.submit) {
@@ -793,67 +912,31 @@
               elements.modelOutput.value = modelOutputText;
             }
 
-            // Tab visibility logic
-            const isSignature = activeTab === "signature";
-            const isPrompt = activeTab === "prompt";
-            const isFinal = activeTab === "final";
-            const isOutput = activeTab === "output";
-
-            if (elements.panelSignature) {
-              elements.panelSignature.hidden = !isSignature;
-            }
-            if (elements.panelPrompt) {
-              elements.panelPrompt.hidden = !isPrompt;
-            }
-            if (elements.panelFinal) {
-              elements.panelFinal.hidden = !isFinal;
-            }
-            if (elements.panelOutput) {
-              elements.panelOutput.hidden = !isOutput;
+            for (const btn of elements.copyButtons) {
+              const targetId = btn.getAttribute("data-copy-target") || "";
+              const targetEl = targetId
+                ? document.getElementById(targetId)
+                : null;
+              const value = targetEl && "value" in targetEl &&
+                  typeof targetEl.value === "string"
+                ? targetEl.value
+                : "";
+              btn.disabled = isLoading || !value.trim().length;
             }
 
-            if (elements.tabSignature) {
-              elements.tabSignature.setAttribute(
-                "aria-selected",
-                isSignature ? "true" : "false",
-              );
-              elements.tabSignature.tabIndex = isSignature ? 0 : -1;
-            }
-            if (elements.tabPrompt) {
-              elements.tabPrompt.setAttribute(
-                "aria-selected",
-                isPrompt ? "true" : "false",
-              );
-              elements.tabPrompt.tabIndex = isPrompt ? 0 : -1;
-            }
-            if (elements.tabFinal) {
-              elements.tabFinal.setAttribute(
-                "aria-selected",
-                isFinal ? "true" : "false",
-              );
-              elements.tabFinal.tabIndex = isFinal ? 0 : -1;
-            }
-            if (elements.tabOutput) {
-              elements.tabOutput.setAttribute(
-                "aria-selected",
-                isOutput ? "true" : "false",
-              );
-              elements.tabOutput.tabIndex = isOutput ? 0 : -1;
+            if (elements.copyAll) {
+              const hasAnyOutput = [
+                signatureText,
+                enhancedPromptText,
+                finalSystemText,
+                finalUserText,
+                modelOutputText,
+              ].some((t) => typeof t === "string" && t.trim().length);
+              elements.copyAll.disabled = isLoading || !hasAnyOutput;
             }
 
-            if (elements.copy) {
-              const activeText = getActiveTabText(currentState);
-              elements.copy.disabled = !activeText || isLoading;
-              const ariaLabels = {
-                signature: "Copy prompt IR to clipboard",
-                prompt: "Copy enhanced prompt to clipboard",
-                final: "Copy final request payload to clipboard",
-                output: "Copy model output to clipboard",
-              };
-              elements.copy.setAttribute(
-                "aria-label",
-                ariaLabels[activeTab] || ariaLabels.signature,
-              );
+            if (elements.downloadJson) {
+              elements.downloadJson.disabled = isLoading || !lastPayload;
             }
 
             if (elements.feedback) {
@@ -938,6 +1021,87 @@
 
           populateContexts();
 
+          const copyToClipboard = async (text) => {
+            if (!text || !text.trim().length) return false;
+            try {
+              await navigator.clipboard.writeText(text);
+              return true;
+            } catch (_err) {
+              try {
+                const textarea = document.createElement("textarea");
+                textarea.value = text;
+                textarea.setAttribute("readonly", "true");
+                textarea.style.position = "fixed";
+                textarea.style.left = "-9999px";
+                document.body.appendChild(textarea);
+                textarea.select();
+                const ok = document.execCommand("copy");
+                document.body.removeChild(textarea);
+                return ok;
+              } catch (_err2) {
+                return false;
+              }
+            }
+          };
+
+          const setCopyFeedback = (message) => {
+            updateState((prev) =>
+              mergeState(prev, { copyFeedback: message })
+            );
+            resetCopyFeedbackLater();
+          };
+
+          for (const btn of elements.copyButtons) {
+            btn.addEventListener("click", async () => {
+              const targetId = btn.getAttribute("data-copy-target") || "";
+              const targetEl = targetId
+                ? document.getElementById(targetId)
+                : null;
+              const text = targetEl && "value" in targetEl &&
+                  typeof targetEl.value === "string"
+                ? targetEl.value
+                : "";
+              const ok = await copyToClipboard(text);
+              setCopyFeedback(ok ? "Copied." : "Copy failed.");
+            });
+          }
+
+          if (elements.copyAll) {
+            elements.copyAll.addEventListener("click", async () => {
+              const payload = {
+                signature: state.signatureText ?? "",
+                enhancedPrompt: state.enhancedPromptText ?? "",
+                finalSystem: state.finalSystemText ?? "",
+                finalUser: state.finalUserText ?? "",
+                modelOutput: state.modelOutputText ?? "",
+              };
+              const ok = await copyToClipboard(
+                JSON.stringify(payload, null, 2),
+              );
+              setCopyFeedback(
+                ok ? "Copied all outputs as JSON." : "Copy failed.",
+              );
+            });
+          }
+
+          if (elements.downloadJson) {
+            elements.downloadJson.addEventListener("click", () => {
+              if (!state.lastPayload) return;
+              const blob = new Blob(
+                [JSON.stringify(state.lastPayload, null, 2)],
+                { type: "application/json" },
+              );
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = "ope-response.json";
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              URL.revokeObjectURL(url);
+            });
+          }
+
           document.body.addEventListener(
             "htmx:beforeRequest",
             (event) => {
@@ -967,7 +1131,6 @@
                 const finalSystemText = deriveFinalSystemText(payload);
                 const finalUserText = deriveFinalUserText(payload);
                 const modelOutputText = deriveModelOutputText(payload);
-                const shouldAutoSwitch = !!enhancedPromptText;
                 updateState((prev) =>
                   mergeState(prev, {
                     isLoading: false,
@@ -976,11 +1139,8 @@
                     finalSystemText,
                     finalUserText,
                     modelOutputText,
-                    activeTab:
-                      shouldAutoSwitch && prev.activeTab === "signature"
-                        ? "prompt"
-                        : prev.activeTab,
                     error: null,
+                    lastPayload: payload,
                   })
                 );
                 return;
@@ -1024,84 +1184,6 @@
               );
             },
           );
-
-          if (elements.copy) {
-            elements.copy.addEventListener("click", async () => {
-              const activeText = getActiveTabText(state);
-              if (!activeText || state.isLoading) {
-                return;
-              }
-              try {
-                await navigator.clipboard.writeText(activeText);
-                updateState((prev) =>
-                  mergeState(prev, {
-                    copyFeedback: "Copied to clipboard.",
-                  })
-                );
-                resetCopyFeedbackLater();
-              } catch (_err) {
-                updateState((prev) =>
-                  mergeState(prev, {
-                    error:
-                      "Unable to copy to clipboard. Your browser may not allow it.",
-                  })
-                );
-              }
-            });
-          }
-
-          const setActiveTab = (nextTab) => {
-            updateState((prev) => {
-              if (
-                nextTab !== "signature" && nextTab !== "prompt" &&
-                nextTab !== "final" && nextTab !== "output"
-              ) return prev;
-              return mergeState(prev, { activeTab: nextTab });
-            });
-          };
-
-          const wireTab = (el, tabValue) => {
-            if (!el) return;
-            el.addEventListener("click", () => setActiveTab(tabValue));
-            el.addEventListener("keydown", (event) => {
-              const key = event.key;
-              if (
-                key !== "ArrowLeft" && key !== "ArrowRight" &&
-                key !== "Home" &&
-                key !== "End"
-              ) return;
-              event.preventDefault();
-              const order = ["signature", "prompt", "final", "output"];
-              const currentIndex = order.indexOf(state.activeTab);
-              let nextIndex = currentIndex;
-              if (key === "Home") nextIndex = 0;
-              if (key === "End") nextIndex = order.length - 1;
-              if (key === "ArrowLeft") {
-                nextIndex = (currentIndex - 1 + order.length) %
-                  order.length;
-              }
-              if (key === "ArrowRight") {
-                nextIndex = (currentIndex + 1) % order.length;
-              }
-              const next = order[nextIndex];
-              setActiveTab(next);
-              const tabElements = {
-                signature: elements.tabSignature,
-                prompt: elements.tabPrompt,
-                final: elements.tabFinal,
-                output: elements.tabOutput,
-              };
-              const focusEl = tabElements[next];
-              if (focusEl && typeof focusEl.focus === "function") {
-                focusEl.focus();
-              }
-            });
-          };
-
-          wireTab(elements.tabSignature, "signature");
-          wireTab(elements.tabPrompt, "prompt");
-          wireTab(elements.tabFinal, "final");
-          wireTab(elements.tabOutput, "output");
         };
 
         if (document.readyState === "loading") {
@@ -1117,11 +1199,20 @@
   <body>
     <main>
       <header>
-        <h1>Online Prompt Enhancer</h1>
+        <div class="brand">
+          <h1>Online Prompt Enhancer</h1>
+          <p>
+            Turn vague prompts into structured, model-ready tasks — and inspect
+            every stage of the pipeline.
+          </p>
+        </div>
       </header>
 
+      <div class="workspace">
       <section class="panel" id="input-panel" aria-labelledby="original-label">
-        <label id="original-label" for="raw-prompt">Original Prompt</label>
+        <div class="panel-head">
+          <label id="original-label" for="raw-prompt">Original Prompt</label>
+        </div>
         <form
           id="enhance-form"
           hx-post="/v1/generate"
@@ -1129,14 +1220,15 @@
           hx-swap="none"
           hx-ext="json-enc"
         >
-          <input
-            type="text"
+          <textarea
             id="raw-prompt"
+            class="prompt-input"
             name="rawPrompt"
             required
-            placeholder="Paste the prompt you want to polish. Add goals, constraints, or any relevant context."
+            placeholder="Paste a prompt. Keep it raw — the enhancer will add structure, constraints, and examples where helpful."
             autocomplete="off"
-          />
+            spellcheck="true"
+          ></textarea>
           <div class="field-grid" aria-label="Advanced options">
             <div>
               <label for="task-type">taskType</label>
@@ -1183,135 +1275,154 @@
             </span>
           </div>
         </form>
+        <div class="error" id="error-message" role="alert" hidden></div>
       </section>
 
       <section class="panel" id="output-panel" aria-labelledby="enhanced-label">
-        <div class="label-row">
-          <label id="enhanced-label">Pipeline Output</label>
-          <button
-            type="button"
-            class="copy"
-            id="copy-button"
-            aria-live="polite"
-            aria-label="Copy enhanced prompt to clipboard"
-            disabled
-          >
-            Copy
-          </button>
-        </div>
-        <div class="tabs" role="tablist" aria-label="Pipeline output views">
-          <button
-            type="button"
-            class="tab"
-            id="tab-signature"
-            role="tab"
-            aria-selected="false"
-            aria-controls="panel-signature"
-            tabindex="-1"
-          >
-            DSPy Signature
-          </button>
-          <button
-            type="button"
-            class="tab"
-            id="tab-prompt"
-            role="tab"
-            aria-selected="true"
-            aria-controls="panel-prompt"
-          >
-            Enhanced Prompt
-          </button>
-          <button
-            type="button"
-            class="tab"
-            id="tab-final"
-            role="tab"
-            aria-selected="false"
-            aria-controls="panel-final"
-            tabindex="-1"
-          >
-            Final Prompt
-          </button>
-          <button
-            type="button"
-            class="tab"
-            id="tab-output"
-            role="tab"
-            aria-selected="false"
-            aria-controls="panel-output"
-            tabindex="-1"
-          >
-            Model Output
-          </button>
-        </div>
-        <div
-          id="panel-signature"
-          class="tabpanel"
-          role="tabpanel"
-          aria-labelledby="tab-signature"
-          hidden
-        >
-          <textarea
-            id="signature-output"
-            readonly
-            placeholder="The synthesized prompt IR (role, objective, constraints, etc.) will appear here."
-          ></textarea>
-        </div>
-        <div
-          id="panel-prompt"
-          class="tabpanel"
-          role="tabpanel"
-          aria-labelledby="tab-prompt"
-        >
-          <textarea
-            id="enhanced-output"
-            readonly
-            placeholder="The enhanced prompt that will be sent to the model will appear here."
-          ></textarea>
-        </div>
-        <div
-          id="panel-final"
-          class="tabpanel"
-          role="tabpanel"
-          aria-labelledby="tab-final"
-          hidden
-        >
-          <div class="stack">
-            <div>
-              <label for="final-system-output">System Prompt (exact)</label>
-              <textarea
-                id="final-system-output"
-                readonly
-                placeholder="The exact system prompt sent to the model will appear here."
-              ></textarea>
-            </div>
-            <div>
-              <label for="final-user-output">User Prompt (exact)</label>
-              <textarea
-                id="final-user-output"
-                readonly
-                placeholder="The exact user prompt sent to the model will appear here."
-              ></textarea>
-            </div>
+        <div class="panel-head">
+          <label id="enhanced-label">Outputs</label>
+          <div class="panel-actions">
+            <button
+              type="button"
+              class="ghost"
+              id="download-json"
+              disabled
+              aria-label="Download full JSON response"
+            >
+              Download JSON
+            </button>
+            <button
+              type="button"
+              class="ghost"
+              id="copy-all"
+              disabled
+              aria-label="Copy all outputs as JSON"
+            >
+              Copy All
+            </button>
           </div>
         </div>
-        <div
-          id="panel-output"
-          class="tabpanel"
-          role="tabpanel"
-          aria-labelledby="tab-output"
-          hidden
-        >
-          <textarea
-            id="model-output"
-            readonly
-            placeholder="The model's generated answer will appear here."
-          ></textarea>
+
+        <div class="output-grid" aria-label="Pipeline outputs">
+          <div class="output-card" data-span="2">
+            <div class="output-card-head">
+              <div class="output-card-title">
+                <div class="title">Enhanced Prompt</div>
+                <div class="meta">What the model is asked to do (TASK)</div>
+              </div>
+              <button
+                type="button"
+                class="copy"
+                data-copy-target="enhanced-output"
+                aria-label="Copy enhanced prompt"
+                disabled
+              >
+                Copy
+              </button>
+            </div>
+            <textarea
+              id="enhanced-output"
+              readonly
+              placeholder="The enhanced prompt that will be sent to the model will appear here."
+            ></textarea>
+          </div>
+
+          <div class="output-card">
+            <div class="output-card-head">
+              <div class="output-card-title">
+                <div class="title">Model Output</div>
+                <div class="meta">The generated answer (output.answer)</div>
+              </div>
+              <button
+                type="button"
+                class="copy"
+                data-copy-target="model-output"
+                aria-label="Copy model output"
+                disabled
+              >
+                Copy
+              </button>
+            </div>
+            <textarea
+              id="model-output"
+              readonly
+              placeholder="The model's generated answer will appear here."
+            ></textarea>
+          </div>
+
+          <div class="output-card">
+            <div class="output-card-head">
+              <div class="output-card-title">
+                <div class="title">DSPy Signature</div>
+                <div class="meta">IR: role, objective, constraints, steps</div>
+              </div>
+              <button
+                type="button"
+                class="copy"
+                data-copy-target="signature-output"
+                aria-label="Copy DSPy signature"
+                disabled
+              >
+                Copy
+              </button>
+            </div>
+            <textarea
+              id="signature-output"
+              readonly
+              placeholder="The synthesized prompt IR (role, objective, constraints, etc.) will appear here."
+            ></textarea>
+          </div>
+
+          <div class="output-card">
+            <div class="output-card-head">
+              <div class="output-card-title">
+                <div class="title">Final System Prompt</div>
+                <div class="meta">Exact system message sent to the model</div>
+              </div>
+              <button
+                type="button"
+                class="copy"
+                data-copy-target="final-system-output"
+                aria-label="Copy final system prompt"
+                disabled
+              >
+                Copy
+              </button>
+            </div>
+            <textarea
+              id="final-system-output"
+              readonly
+              placeholder="The exact system prompt sent to the model will appear here."
+            ></textarea>
+          </div>
+
+          <div class="output-card">
+            <div class="output-card-head">
+              <div class="output-card-title">
+                <div class="title">Final User Prompt</div>
+                <div class="meta">Exact user message sent to the model</div>
+              </div>
+              <button
+                type="button"
+                class="copy"
+                data-copy-target="final-user-output"
+                aria-label="Copy final user prompt"
+                disabled
+              >
+                Copy
+              </button>
+            </div>
+            <textarea
+              id="final-user-output"
+              readonly
+              placeholder="The exact user prompt sent to the model will appear here."
+            ></textarea>
+          </div>
         </div>
+
         <div class="feedback" id="copy-feedback" aria-live="polite"></div>
       </section>
-
-      <div class="error" id="error-message" role="alert" hidden></div>
+      </div>
     </main>
   </body>
 </html>
