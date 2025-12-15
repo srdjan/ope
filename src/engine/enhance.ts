@@ -264,6 +264,7 @@ function improveClarityIfNeeded(
  */
 function expandDefinitionQuestionIfNeeded(
   rawPrompt: string,
+  analysis: PromptAnalysis,
 ): { expanded: string; wasExpanded: boolean } {
   const trimmed = rawPrompt.trim();
 
@@ -285,6 +286,58 @@ function expandDefinitionQuestionIfNeeded(
   const term = match[1]?.trim() ?? "";
   if (!term || term.length > 80) {
     return { expanded: rawPrompt, wasExpanded: false };
+  }
+
+  const termLower = term.toLowerCase();
+
+  // Provide a richer expansion for common technical definition prompts where
+  // a structured answer and constraints add significant value.
+  if (analysis.detectedDomain === "technical" && termLower.includes("docker")) {
+    const lines: string[] = [
+      trimmed,
+      "",
+      "You are writing for a junior software engineer (0–2 years of experience) who knows basic Linux/CLI and Git but is new to containers.",
+      "",
+      "## Goal",
+      "Help the reader understand Docker well enough to decide when to use it, and to run a simple containerized app locally.",
+      "",
+      "## Success Criteria",
+      "- The reader can explain images vs. containers in their own words.",
+      "- The reader can build and run a container locally using the provided commands.",
+      "- The reader can name at least 2 scenarios where Docker is a good fit and 2 where it is not.",
+      "",
+      "## Instructions",
+      "1. Provide a one-sentence definition of Docker.",
+      "2. Explain the mental model: images vs. containers vs. registries, and where Docker Engine fits.",
+      "3. Describe at least 4 common use cases, each with a concrete example.",
+      "4. Compare Docker to virtual machines (VMs) and mention at least one Docker-compatible alternative (e.g., Podman) in 1–2 sentences.",
+      "5. Walk through a minimal end-to-end example:",
+      "   - A tiny `Dockerfile` (keep it under ~15 lines).",
+      "   - `docker build` and `docker run` commands.",
+      "   - What the user should see if it worked.",
+      "6. End with a short checklist of pitfalls and best practices (ports, volumes, image size, secrets).",
+      "",
+      "## Output Constraints",
+      "- Format: Markdown with headings and numbered sections matching the steps above.",
+      "- Length: 600–900 words (excluding the JSON block).",
+      "- Citations: include 3–5 authoritative sources as footnotes like [1], [2], [3] (prefer official Docker documentation).",
+      "- Include a machine-readable summary at the end as a JSON object matching this schema:",
+      "```json",
+      "{",
+      '  "oneSentenceDefinition": "string",',
+      '  "keyConcepts": ["string"],',
+      '  "useCases": ["string"],',
+      '  "whenNotToUse": ["string"],',
+      '  "commandsShown": ["string"]',
+      "}",
+      "```",
+      "",
+      "## Few-shot Example",
+      "User: What is a container image?",
+      "Assistant: A container image is an immutable template that packages an application and its dependencies so it can run consistently across environments. It is used to create containers.",
+    ];
+
+    return { expanded: lines.join("\n"), wasExpanded: true };
   }
 
   const suffix =
@@ -342,6 +395,7 @@ export function enhancePrompt(
   if (analysis.detectedDomain && !analysis.isCompoundQuestion) {
     const { expanded, wasExpanded } = expandDefinitionQuestionIfNeeded(
       enhancedPrompt,
+      analysis,
     );
     if (wasExpanded) {
       enhancedPrompt = expanded;
