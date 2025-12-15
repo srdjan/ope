@@ -203,6 +203,21 @@
         transition: border 120ms ease, box-shadow 120ms ease;
       }
 
+      input[type="text"],
+      input[type="search"],
+      input[type="url"] {
+        width: 100%;
+        padding: 10px 12px;
+        font-family: var(--font-body);
+        font-size: 0.9rem;
+        line-height: 1.4;
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.95);
+        transition: border 120ms ease, box-shadow 120ms ease;
+      }
+
       textarea:focus {
         outline: none;
         border-color: var(--accent);
@@ -215,6 +230,10 @@
       }
 
       textarea::placeholder {
+        color: rgba(92, 95, 109, 0.68);
+      }
+
+      input::placeholder {
         color: rgba(92, 95, 109, 0.68);
       }
 
@@ -1099,10 +1118,6 @@
     <main>
       <header>
         <h1>Online Prompt Enhancer</h1>
-        <p>
-          Write your baseline prompt, press enhance, and receive a refined
-          version tuned for high-quality model responses.
-        </p>
       </header>
 
       <section class="panel" id="input-panel" aria-labelledby="original-label">
@@ -1114,13 +1129,14 @@
           hx-swap="none"
           hx-ext="json-enc"
         >
-          <textarea
+          <input
+            type="text"
             id="raw-prompt"
             name="rawPrompt"
             required
             placeholder="Paste the prompt you want to polish. Add goals, constraints, or any relevant context."
             autocomplete="off"
-          ></textarea>
+          />
           <div class="field-grid" aria-label="Advanced options">
             <div>
               <label for="task-type">taskType</label>
