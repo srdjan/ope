@@ -3,639 +3,891 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Online Prompt Enhancer</title>
+    <title>OPE — Online Prompt Enhancer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
     <style>
+      /* ═══════════════════════════════════════════════════════════════════════
+         CSS Custom Properties & Theme
+         ═══════════════════════════════════════════════════════════════════════ */
       :root {
         color-scheme: light dark;
-        --bg: #f6f6f8;
-        --card: #ffffff;
-        --border: #d7d7e0;
-        --text: #1c1c1f;
-        --muted: #5a5a62;
-        --accent: #2f6fed;
-        --accent-hover: #2154c3;
-        --accent-2: #9c56ff;
-        --error: #d63d3d;
-        --font-body:
-          "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
-        --radius: 16px;
-        --shadow: 0 12px 32px rgba(34, 43, 68, 0.12);
+
+        /* Colors - Light Mode */
+        --bg-base: #f8f9fc;
+        --bg-elevated: #ffffff;
+        --bg-subtle: rgba(0, 0, 0, 0.02);
+        --border: rgba(0, 0, 0, 0.08);
+        --border-strong: rgba(0, 0, 0, 0.12);
+        --text-primary: #0f172a;
+        --text-secondary: #475569;
+        --text-muted: #94a3b8;
+        --accent: #6366f1;
+        --accent-hover: #4f46e5;
+        --accent-subtle: rgba(99, 102, 241, 0.1);
+        --accent-glow: rgba(99, 102, 241, 0.25);
+        --success: #10b981;
+        --error: #ef4444;
+        --glass: rgba(255, 255, 255, 0.7);
+        --glass-border: rgba(255, 255, 255, 0.3);
+
+        /* Typography */
+        --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+
+        /* Spacing Scale */
+        --space-1: 0.25rem;
+        --space-2: 0.5rem;
+        --space-3: 0.75rem;
+        --space-4: 1rem;
+        --space-5: 1.25rem;
+        --space-6: 1.5rem;
+        --space-8: 2rem;
+        --space-10: 2.5rem;
+        --space-12: 3rem;
+
+        /* Radii */
+        --radius-sm: 6px;
+        --radius-md: 10px;
+        --radius-lg: 16px;
+        --radius-xl: 24px;
+        --radius-full: 9999px;
+
+        /* Shadows */
+        --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+        --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.08);
+        --shadow-glow: 0 0 40px var(--accent-glow);
+
+        /* Transitions */
+        --transition-fast: 120ms ease;
+        --transition-base: 200ms ease;
+        --transition-slow: 300ms ease;
       }
 
       @media (prefers-color-scheme: dark) {
         :root {
-          --bg: #0b0b10;
-          --card: #12121b;
-          --border: #2a2a38;
-          --text: #f4f4f7;
-          --muted: rgba(244, 244, 247, 0.68);
-          --shadow: 0 18px 45px rgba(0, 0, 0, 0.45);
+          --bg-base: #0c0c0f;
+          --bg-elevated: #161619;
+          --bg-subtle: rgba(255, 255, 255, 0.03);
+          --border: rgba(255, 255, 255, 0.08);
+          --border-strong: rgba(255, 255, 255, 0.12);
+          --text-primary: #f8fafc;
+          --text-secondary: #94a3b8;
+          --text-muted: #64748b;
+          --accent: #818cf8;
+          --accent-hover: #a5b4fc;
+          --accent-subtle: rgba(129, 140, 248, 0.12);
+          --accent-glow: rgba(129, 140, 248, 0.2);
+          --glass: rgba(22, 22, 25, 0.8);
+          --glass-border: rgba(255, 255, 255, 0.06);
         }
       }
 
-      * {
+      /* ═══════════════════════════════════════════════════════════════════════
+         Reset & Base
+         ═══════════════════════════════════════════════════════════════════════ */
+      *,
+      *::before,
+      *::after {
         box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html {
+        font-size: 16px;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
       }
 
       body {
-        margin: 0;
-        min-height: 100vh;
-        background:
-          radial-gradient(
-            900px circle at 20% -15%,
-            rgba(47, 111, 237, 0.22),
-            transparent 55%
-          ),
-          radial-gradient(
-            900px circle at 115% 10%,
-            rgba(156, 86, 255, 0.14),
-            transparent 50%
-          ),
-          var(--bg);
-        font-family: var(--font-body);
-        color: var(--text);
-        display: flex;
-        justify-content: center;
-        padding: 16px 12px 24px;
+        font-family: var(--font-sans);
+        background: var(--bg-base);
+        color: var(--text-primary);
+        line-height: 1.5;
+        min-height: 100dvh;
       }
 
-      main {
-        width: min(960px, 100%);
+      /* ═══════════════════════════════════════════════════════════════════════
+         Layout Structure
+         ═══════════════════════════════════════════════════════════════════════ */
+      .app {
         display: flex;
         flex-direction: column;
-        gap: 16px;
-        min-height: 0;
+        min-height: 100dvh;
       }
 
-      header {
+      .app-header {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: var(--glass);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-bottom: 1px solid var(--border);
+        padding: var(--space-4) var(--space-5);
+      }
+
+      .header-content {
+        max-width: 1600px;
+        margin: 0 auto;
         display: flex;
-        align-items: baseline;
+        align-items: center;
         justify-content: space-between;
-        gap: 14px;
-        padding: 16px 18px;
-        background: var(--card);
-        border-radius: var(--radius);
-        border: 1px solid var(--border);
-        box-shadow: var(--shadow);
+        gap: var(--space-4);
       }
 
       .brand {
         display: flex;
-        flex-direction: column;
-        gap: 6px;
+        align-items: center;
+        gap: var(--space-3);
       }
 
-      header h1 {
-        margin: 0;
-        font-weight: 600;
+      .brand-logo {
+        width: 32px;
+        height: 32px;
+        background: linear-gradient(135deg, var(--accent), #a78bfa);
+        border-radius: var(--radius-md);
+        display: grid;
+        place-items: center;
+        color: white;
+        font-weight: 700;
+        font-size: 0.875rem;
+      }
+
+      .brand-name {
+        font-weight: 700;
+        font-size: 1.125rem;
         letter-spacing: -0.02em;
       }
 
-      header p {
-        margin: 0;
-        color: var(--muted);
-        font-size: 0.95rem;
-        line-height: 1.5;
+      .brand-tag {
+        display: none;
+        color: var(--text-muted);
+        font-size: 0.8125rem;
+      }
+
+      @media (min-width: 640px) {
+        .brand-tag {
+          display: block;
+        }
+      }
+
+      .header-actions {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+      }
+
+      /* ═══════════════════════════════════════════════════════════════════════
+         Main Content Area
+         ═══════════════════════════════════════════════════════════════════════ */
+      .app-main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
       }
 
       .workspace {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 16px;
-        min-height: 0;
-      }
-
-      section.panel {
-        padding: 18px;
-        background: var(--card);
-        border-radius: var(--radius);
-        border: 1px solid var(--border);
-        box-shadow: var(--shadow);
+        flex: 1;
         display: flex;
         flex-direction: column;
-        gap: 16px;
-        min-height: 0;
-      }
-
-      @media (min-width: 980px) {
-        body {
-          height: 100vh;
-          overflow: hidden;
-          padding: 18px;
-        }
-
-        main {
-          height: 100%;
-          width: min(1240px, 100%);
-        }
-
-        .workspace {
-          grid-template-columns: minmax(360px, 420px) minmax(0, 1fr);
-          flex: 1 1 auto;
-          min-height: 0;
-        }
-
-        #input-panel,
-        #output-panel {
-          min-height: 0;
-          overflow: hidden;
-        }
-      }
-
-      label {
-        display: block;
-        font-weight: 500;
-        font-size: 0.9rem;
-        margin-bottom: 6px;
-      }
-
-      .label-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 12px;
-      }
-
-      .label-row label {
-        margin: 0;
-      }
-
-      .stack {
-        display: flex;
-        flex-direction: column;
-        gap: 14px;
-      }
-
-      .field-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 12px;
-      }
-
-      @media (min-width: 920px) {
-        .field-grid {
-          grid-template-columns: repeat(4, minmax(0, 1fr));
-        }
-      }
-
-      select,
-      input[type="text"] {
+        max-width: 1600px;
         width: 100%;
-        padding: 10px 12px;
-        font: inherit;
-        font-size: 0.92rem;
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        background: rgba(255, 255, 255, 0.85);
-        color: var(--text);
-        transition: border 120ms ease, box-shadow 120ms ease;
+        margin: 0 auto;
+        padding: var(--space-4);
+        gap: var(--space-4);
       }
 
-      select:focus,
-      input[type="text"]:focus {
+      @media (min-width: 1024px) {
+        .workspace {
+          flex-direction: row;
+          padding: var(--space-6);
+          gap: var(--space-6);
+          height: calc(100dvh - 65px);
+        }
+      }
+
+      /* ═══════════════════════════════════════════════════════════════════════
+         Input Panel
+         ═══════════════════════════════════════════════════════════════════════ */
+      .input-panel {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-4);
+      }
+
+      @media (min-width: 1024px) {
+        .input-panel {
+          width: 420px;
+          flex-shrink: 0;
+        }
+      }
+
+      .card {
+        background: var(--bg-elevated);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+      }
+
+      .input-card {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+      }
+
+      @media (min-width: 1024px) {
+        .input-card {
+          max-height: calc(100dvh - 65px - var(--space-6) * 2);
+        }
+      }
+
+      .card-header {
+        padding: var(--space-4) var(--space-5);
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-3);
+      }
+
+      .card-title {
+        font-weight: 600;
+        font-size: 0.9375rem;
+        letter-spacing: -0.01em;
+      }
+
+      .card-body {
+        padding: var(--space-5);
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-4);
+      }
+
+      /* ═══════════════════════════════════════════════════════════════════════
+         Form Elements
+         ═══════════════════════════════════════════════════════════════════════ */
+      .prompt-area {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        /* min-height: 180px; */
+      }
+
+      @media (min-width: 1024px) {
+        .prompt-area {
+          min-height: 0;
+        }
+      }
+
+      .prompt-input {
+        flex: 1;
+        width: 100%;
+        min-height: 60px;
+        max-height: 60px;
+        padding: var(--space-4);
+        font-family: var(--font-sans);
+        font-size: 0.9375rem;
+        line-height: 1.6;
+        color: var(--text-primary);
+        background: var(--bg-subtle);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        resize: none;
+        transition:
+          border-color var(--transition-fast),
+          box-shadow var(--transition-fast);
+      }
+
+      .prompt-input:focus {
         outline: none;
         border-color: var(--accent);
-        box-shadow: 0 0 0 3px rgba(47, 111, 237, 0.16);
+        box-shadow: 0 0 0 3px var(--accent-subtle);
       }
 
-      .hint {
-        font-size: 0.78rem;
-        color: var(--muted);
-        margin-top: 6px;
+      .prompt-input::placeholder {
+        color: var(--text-muted);
       }
 
-      .tabs {
-        display: flex;
-        gap: 10px;
-        border-bottom: 1px solid var(--border);
-        padding-bottom: 6px;
-        flex-wrap: wrap;
+      /* Settings Dropdown */
+      .settings-wrapper {
+        position: relative;
       }
 
-      .tab {
-        appearance: none;
-        border: 1px solid transparent;
+      .settings-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
         background: transparent;
-        color: var(--muted);
-        font: inherit;
-        font-weight: 500;
-        padding: 8px 10px;
-        border-radius: 10px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        color: var(--text-secondary);
         cursor: pointer;
         transition:
-          background 120ms ease,
-          color 120ms ease,
-          border 120ms ease;
+          border-color var(--transition-fast),
+          color var(--transition-fast),
+          background var(--transition-fast);
       }
 
-      .tab:hover {
-        background: rgba(47, 111, 237, 0.08);
-        color: var(--text);
+      .settings-btn:hover {
+        background: var(--bg-subtle);
+        border-color: var(--border-strong);
+        color: var(--text-primary);
       }
 
-      .tab[aria-selected="true"] {
-        color: var(--text);
-        border-color: rgba(47, 111, 237, 0.35);
-        background: rgba(47, 111, 237, 0.12);
+      .settings-btn[aria-expanded="true"] {
+        background: var(--accent-subtle);
+        border-color: var(--accent);
+        color: var(--accent);
       }
 
-      .tab:focus-visible {
-        outline: none;
-        box-shadow: 0 0 0 3px rgba(47, 111, 237, 0.18);
+      .settings-btn svg {
+        width: 18px;
+        height: 18px;
       }
 
-      .tabpanel[hidden] {
+      .settings-dropdown {
+        position: absolute;
+        top: calc(100% + var(--space-2));
+        right: 0;
+        width: 280px;
+        padding: var(--space-4);
+        background: var(--bg-elevated);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-lg);
+        z-index: 200;
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-3);
+      }
+
+      .settings-dropdown[hidden] {
         display: none;
       }
 
-      textarea {
-        width: 100%;
-        min-height: 140px;
-        padding: 12px 14px;
-        font-family:
-          "JetBrains Mono", "SFMono-Regular", ui-monospace, Menlo, Consolas,
-          "Liberation Mono", monospace;
-        font-size: 0.9rem;
-        line-height: 1.45;
-        color: var(--text);
+      .settings-title {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding-bottom: var(--space-2);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .settings-grid {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-3);
+      }
+
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-1);
+      }
+
+      .field-label {
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: var(--text-muted);
+      }
+
+      .field-select {
+        padding: var(--space-2) var(--space-3);
+        font-family: var(--font-sans);
+        font-size: 0.8125rem;
+        color: var(--text-primary);
+        background: var(--bg-subtle);
         border: 1px solid var(--border);
-        border-radius: 12px;
-        resize: vertical;
-        background: rgba(255, 255, 255, 0.8);
-        transition: border 120ms ease, box-shadow 120ms ease;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        transition:
+          border-color var(--transition-fast),
+          box-shadow var(--transition-fast);
       }
 
-      textarea.prompt-input {
-        font-family: var(--font-body);
-        font-size: 0.95rem;
-        line-height: 1.55;
-        background: rgba(255, 255, 255, 0.86);
-      }
-
-      input[type="text"],
-      input[type="search"],
-      input[type="url"] {
-        width: 100%;
-        padding: 10px 12px;
-        font-family: var(--font-body);
-        font-size: 0.9rem;
-        line-height: 1.4;
-        color: var(--text);
-        border: 1px solid var(--border);
-        border-radius: 10px;
-        background: rgba(255, 255, 255, 0.95);
-        transition: border 120ms ease, box-shadow 120ms ease;
-      }
-
-      textarea:focus {
+      .field-select:focus {
         outline: none;
         border-color: var(--accent);
-        box-shadow: 0 0 0 3px rgba(47, 111, 237, 0.16);
+        box-shadow: 0 0 0 2px var(--accent-subtle);
       }
 
-      textarea[readonly] {
-        background: rgba(248, 248, 252, 0.7);
-        color: var(--text);
-      }
-
-      @media (prefers-color-scheme: dark) {
-        select,
-        input[type="text"],
-        input[type="search"],
-        input[type="url"],
-        textarea {
-          background: rgba(255, 255, 255, 0.04);
-        }
-
-        textarea[readonly] {
-          background: rgba(255, 255, 255, 0.03);
-        }
-      }
-
-      textarea::placeholder {
-        color: rgba(92, 95, 109, 0.68);
-      }
-
-      input::placeholder {
-        color: rgba(92, 95, 109, 0.68);
-      }
-
-      .form-actions {
+      /* Submit Area */
+      .submit-area {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: var(--space-3);
+        padding-top: 15px;
       }
 
-      button {
-        cursor: pointer;
-        border: none;
-        border-radius: 999px;
-        padding: 0.6rem 1.4rem;
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--space-2);
+        padding: var(--space-3) var(--space-5);
+        font-family: var(--font-sans);
+        font-size: 0.875rem;
         font-weight: 600;
-        font-size: 0.9rem;
-        letter-spacing: 0.01em;
+        line-height: 1;
+        border: none;
+        border-radius: var(--radius-full);
+        cursor: pointer;
         transition:
-          transform 120ms ease,
-          box-shadow 120ms ease,
-          background 120ms ease;
+          transform var(--transition-fast),
+          box-shadow var(--transition-fast),
+          background var(--transition-fast);
       }
 
-      button[type="submit"] {
+      .btn-primary {
         background: var(--accent);
         color: white;
-        box-shadow: 0 10px 24px rgba(47, 111, 237, 0.22);
+        box-shadow: var(--shadow-md), 0 0 20px var(--accent-glow);
       }
 
-      button[type="submit"]:hover {
+      .btn-primary:hover:not(:disabled) {
         background: var(--accent-hover);
         transform: translateY(-1px);
-        box-shadow: 0 14px 28px rgba(47, 111, 237, 0.28);
+        box-shadow: var(--shadow-lg), 0 0 30px var(--accent-glow);
       }
 
-      button[type="submit"][disabled],
-      button[type="submit"][data-loading="true"] {
-        background: var(--accent-hover);
-        opacity: 0.65;
-        cursor: progress;
+      .btn-primary:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
         transform: none;
-        box-shadow: none;
       }
 
-      button[type="submit"][data-loading="true"]::after {
+      .btn-primary[data-loading="true"] {
+        pointer-events: none;
+      }
+
+      .btn-primary[data-loading="true"] .btn-text {
+        opacity: 0;
+      }
+
+      .btn-primary[data-loading="true"]::after {
         content: "";
-        display: inline-block;
+        position: absolute;
         width: 18px;
         height: 18px;
-        border-radius: 50%;
-        border: 2px solid rgba(255, 255, 255, 0.4);
+        border: 2px solid rgba(255, 255, 255, 0.3);
         border-top-color: white;
-        margin-left: 12px;
-        animation: spinner 700ms linear infinite;
-        vertical-align: middle;
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
       }
 
-      @keyframes spinner {
+      @keyframes spin {
         to {
           transform: rotate(360deg);
         }
       }
 
-      button.copy {
-        background: rgba(47, 111, 237, 0.1);
-        color: var(--accent);
-        padding: 0.55rem 1.2rem;
-        border-radius: 12px;
-        box-shadow: none;
-      }
-
-      button.copy:hover {
-        background: rgba(47, 111, 237, 0.16);
-      }
-
-      button.copy:disabled {
-        color: rgba(47, 111, 237, 0.45);
-        background: rgba(47, 111, 237, 0.08);
-        cursor: not-allowed;
-      }
-
-      .status {
-        font-size: 0.85rem;
-        color: var(--muted);
-      }
-
-      .feedback {
-        font-size: 0.8rem;
-        color: var(--muted);
-        min-height: 1em;
-      }
-
-      .error {
-        background: rgba(214, 61, 61, 0.08);
-        border: 1px solid rgba(214, 61, 61, 0.32);
-        color: var(--error);
-        padding: 10px 14px;
-        border-radius: 12px;
-        font-size: 0.9rem;
-      }
-
-      #error-message {
-        max-height: 22vh;
-        overflow: auto;
-      }
-
-      .panel-head {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-      }
-
-      .panel-head label {
-        margin: 0;
-      }
-
-      .panel-actions {
-        display: flex;
-        gap: 10px;
-        align-items: center;
-        flex-wrap: wrap;
-      }
-
-      button.ghost {
+      .btn-ghost {
         background: transparent;
-        border: 1px solid rgba(90, 90, 98, 0.25);
-        color: var(--text);
-        padding: 0.55rem 1.05rem;
-        border-radius: 999px;
-        box-shadow: none;
-        font-weight: 600;
+        color: var(--text-secondary);
+        padding: var(--space-2) var(--space-3);
       }
 
-      button.ghost:hover {
-        background: rgba(47, 111, 237, 0.08);
-        border-color: rgba(47, 111, 237, 0.35);
+      .btn-ghost:hover {
+        background: var(--bg-subtle);
+        color: var(--text-primary);
       }
 
-      button.ghost:disabled {
-        opacity: 0.55;
+      .btn-ghost:disabled {
+        opacity: 0.5;
         cursor: not-allowed;
       }
 
-      .output-grid {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 12px;
-        min-height: 0;
-        flex: 1 1 auto;
+      .status-indicator {
+        font-size: 0.8125rem;
+        color: var(--text-muted);
       }
 
-      .output-card {
-        border: 1px solid var(--border);
-        border-radius: 14px;
-        padding: 12px 12px 10px;
+      .status-indicator[hidden] {
+        display: none;
+      }
+
+      /* Error Message */
+      .error-banner {
+        padding: var(--space-3) var(--space-4);
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        border-radius: var(--radius-md);
+        color: var(--error);
+        font-size: 0.875rem;
+      }
+
+      .error-banner[hidden] {
+        display: none;
+      }
+
+      /* ═══════════════════════════════════════════════════════════════════════
+         Output Panel
+         ═══════════════════════════════════════════════════════════════════════ */
+      .output-panel {
+        flex: 1;
         display: flex;
         flex-direction: column;
-        gap: 10px;
-        min-height: 0;
-        background:
-          linear-gradient(
-            180deg,
-            rgba(255, 255, 255, 0.65),
-            rgba(255, 255, 255, 0.35)
-          );
-      }
-
-      @media (prefers-color-scheme: dark) {
-        .output-card {
-          background:
-            linear-gradient(
-              180deg,
-              rgba(255, 255, 255, 0.05),
-              rgba(255, 255, 255, 0.02)
-            );
-        }
-      }
-
-      .output-card-head {
-        display: flex;
-        align-items: baseline;
-        justify-content: space-between;
-        gap: 10px;
-      }
-
-      .output-card-title {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
         min-width: 0;
       }
 
-      .output-card-title .title {
-        font-weight: 600;
-        letter-spacing: -0.01em;
-        margin: 0;
-        font-size: 0.92rem;
+      .output-card {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 400px;
       }
 
-      .output-card-title .meta {
-        color: var(--muted);
-        font-size: 0.78rem;
+      @media (min-width: 1024px) {
+        .output-card {
+          min-height: 0;
+          max-height: calc(100dvh - 65px - var(--space-6) * 2);
+        }
       }
 
-      .output-card textarea {
-        flex: 1 1 auto;
+      /* Tab Navigation */
+      .tab-nav {
+        display: flex;
+        gap: var(--space-1);
+        padding: var(--space-3) var(--space-4);
+        border-bottom: 1px solid var(--border);
+        overflow-x: auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+      }
+
+      .tab-nav::-webkit-scrollbar {
+        display: none;
+      }
+
+      .tab-btn {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        padding: var(--space-2) var(--space-3);
+        font-family: var(--font-sans);
+        font-size: 0.8125rem;
+        font-weight: 500;
+        color: var(--text-muted);
+        background: transparent;
+        border: none;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        transition:
+          color var(--transition-fast),
+          background var(--transition-fast);
+        white-space: nowrap;
+      }
+
+      .tab-btn:hover {
+        color: var(--text-secondary);
+        background: var(--bg-subtle);
+      }
+
+      .tab-btn[aria-selected="true"] {
+        color: var(--accent);
+        background: var(--accent-subtle);
+      }
+
+      .tab-btn .tab-dot {
+        width: 6px;
+        height: 6px;
+        background: var(--text-muted);
+        border-radius: 50%;
+        opacity: 0;
+        transition: opacity var(--transition-fast);
+      }
+
+      .tab-btn[data-has-content="true"] .tab-dot {
+        opacity: 1;
+        background: var(--success);
+      }
+
+      /* Tab Content */
+      .tab-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
         min-height: 0;
+      }
+
+      .tab-panel {
+        flex: 1;
+        display: none;
+        flex-direction: column;
+        min-height: 0;
+      }
+
+      .tab-panel[data-active="true"] {
+        display: flex;
+      }
+
+      .output-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-3);
+        padding: var(--space-3) var(--space-5);
+        border-bottom: 1px solid var(--border);
+        background: var(--bg-subtle);
+      }
+
+      .output-meta {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-1);
+      }
+
+      .output-title {
+        font-weight: 600;
+        font-size: 0.875rem;
+      }
+
+      .output-desc {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+      }
+
+      .output-body {
+        flex: 1;
+        padding: var(--space-4);
+        min-height: 0;
+        overflow: hidden;
+      }
+
+      .output-textarea {
+        width: 100%;
         height: 100%;
+        min-height: 400px;
+        padding: var(--space-4);
+        font-family: var(--font-mono);
+        font-size: 0.8125rem;
+        line-height: 1.6;
+        color: var(--text-primary);
+        background: var(--bg-subtle);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
         resize: none;
-        background: rgba(255, 255, 255, 0.65);
       }
 
-      @media (prefers-color-scheme: dark) {
-        .output-card textarea {
-          background: rgba(255, 255, 255, 0.03);
+      .output-textarea:focus {
+        outline: none;
+        border-color: var(--accent);
+      }
+
+      .output-textarea::placeholder {
+        color: var(--text-muted);
+      }
+
+      @media (min-width: 1024px) {
+        .output-body {
+          padding: var(--space-5);
         }
-      }
 
-      @media (min-width: 980px) {
-        #enhance-form {
-          display: flex;
-          flex-direction: column;
+        .output-textarea {
           min-height: 0;
-          gap: 12px;
         }
+      }
 
-        #raw-prompt {
-          flex: 1 1 auto;
-          min-height: 0;
-          resize: none;
+      /* Output Actions */
+      .output-actions {
+        display: flex;
+        gap: var(--space-2);
+      }
+
+      .btn-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        background: var(--bg-elevated);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition:
+          border-color var(--transition-fast),
+          color var(--transition-fast);
+      }
+
+      .btn-icon:hover:not(:disabled) {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+
+      .btn-icon:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+
+      .btn-icon svg {
+        width: 16px;
+        height: 16px;
+      }
+
+      /* Footer Actions */
+      .output-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-3);
+        padding: var(--space-3) var(--space-5);
+        border-top: 1px solid var(--border);
+        background: var(--bg-subtle);
+      }
+
+      .footer-actions {
+        display: flex;
+        gap: var(--space-2);
+      }
+
+      .copy-feedback {
+        font-size: 0.8125rem;
+        color: var(--success);
+        opacity: 0;
+        transition: opacity var(--transition-fast);
+      }
+
+      .copy-feedback[data-visible="true"] {
+        opacity: 1;
+      }
+
+      /* ═══════════════════════════════════════════════════════════════════════
+         Toast Notifications
+         ═══════════════════════════════════════════════════════════════════════ */
+      .toast-container {
+        position: fixed;
+        bottom: var(--space-6);
+        right: var(--space-6);
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-2);
+      }
+
+      .toast {
+        padding: var(--space-3) var(--space-4);
+        background: var(--bg-elevated);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-lg);
+        font-size: 0.875rem;
+        animation: toast-in 0.3s ease forwards;
+      }
+
+      .toast[data-type="success"] {
+        border-color: var(--success);
+        color: var(--success);
+      }
+
+      @keyframes toast-in {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
         }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
 
-        #output-panel {
+      /* ═══════════════════════════════════════════════════════════════════════
+         Utility Classes
+         ═══════════════════════════════════════════════════════════════════════ */
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+
+      /* ═══════════════════════════════════════════════════════════════════════
+         Pipeline Visualization (Desktop)
+         ═══════════════════════════════════════════════════════════════════════ */
+      .pipeline-indicator {
+        display: none;
+      }
+
+      @media (min-width: 1024px) {
+        .pipeline-indicator {
           display: flex;
-          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          width: 48px;
+          flex-shrink: 0;
         }
 
-        .output-grid {
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          grid-template-rows: repeat(3, minmax(0, 1fr));
+        .pipeline-arrow {
+          width: 24px;
+          height: 24px;
+          color: var(--text-muted);
+          opacity: 0.5;
         }
 
-        .output-card[data-span="2"] {
-          grid-column: 1 / -1;
-        }
-      }
-
-      @media (max-width: 720px) {
-        header,
-        section.panel {
-          padding: 16px;
+        .pipeline-arrow[data-active="true"] {
+          opacity: 1;
+          color: var(--accent);
+          animation: pulse 1.5s ease-in-out infinite;
         }
 
-        textarea {
-          min-height: 130px;
-        }
-
-        .form-actions {
-          flex-direction: column;
-          align-items: flex-start;
-        }
-
-        .form-actions button {
-          width: 100%;
-          text-align: center;
-        }
-
-        .label-row {
-          flex-direction: column;
-          align-items: flex-start;
-          gap: 8px;
-        }
-
-        .field-grid {
-          grid-template-columns: 1fr;
+        @keyframes pulse {
+          0%,
+          100% {
+            opacity: 0.5;
+          }
+          50% {
+            opacity: 1;
+          }
         }
       }
 
-      @media (min-height: 900px) {
-        body {
-          padding: 32px 16px 64px;
-        }
+      /* ═══════════════════════════════════════════════════════════════════════
+         Keyboard Shortcut Hints
+         ═══════════════════════════════════════════════════════════════════════ */
+      .kbd {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 20px;
+        padding: 2px 6px;
+        font-family: var(--font-sans);
+        font-size: 0.6875rem;
+        font-weight: 500;
+        color: var(--text-muted);
+        background: var(--bg-subtle);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+      }
 
-        main {
-          gap: 24px;
-        }
+      .shortcut-hint {
+        display: none;
+        align-items: center;
+        gap: var(--space-1);
+        margin-left: var(--space-2);
+      }
 
-        header {
-          padding: 24px 28px;
-        }
-
-        section.panel {
-          padding: 28px;
-        }
-
-        textarea {
-          min-height: 200px;
-          padding: 16px 18px;
-          font-size: 0.95rem;
-          line-height: 1.5;
-        }
-
-        button {
-          padding: 0.75rem 1.75rem;
-          font-size: 0.95rem;
-        }
-
-        .status {
-          font-size: 0.9rem;
-        }
-
-        .feedback {
-          font-size: 0.85rem;
-        }
-
-        .error {
-          padding: 14px 18px;
-          font-size: 0.92rem;
+      @media (min-width: 768px) {
+        .shortcut-hint {
+          display: inline-flex;
         }
       }
     </style>
@@ -646,550 +898,425 @@
     ></script>
     <script>
       (() => {
-        const enhanceFormId = "enhance-form";
-        const promptOutputId = "enhanced-output";
-        const signatureOutputId = "signature-output";
-        const finalSystemOutputId = "final-system-output";
-        const finalUserOutputId = "final-user-output";
-        const modelOutputId = "model-output";
-        const statusId = "status-text";
-        const errorId = "error-message";
-        const copyFeedbackId = "copy-feedback";
-        const contextSelectId = "context-select";
-        const contextHintId = "context-hint";
-        const copyAllId = "copy-all";
-        const downloadJsonId = "download-json";
-
+        // ─────────────────────────────────────────────────────────────────────
+        // State Management
+        // ─────────────────────────────────────────────────────────────────────
         const createState = (overrides = {}) =>
           Object.freeze({
             isLoading: false,
-            signatureText: "",
-            enhancedPromptText: "",
-            finalSystemText: "",
-            finalUserText: "",
-            modelOutputText: "",
+            activeTab: "enhanced",
+            outputs: {
+              enhanced: "",
+              model: "",
+              signature: "",
+              system: "",
+              user: "",
+            },
             error: null,
             copyFeedback: "",
             lastPayload: null,
+            settingsOpen: false,
             ...overrides,
           });
 
-        const mergeState = (prev, patch) =>
-          createState({ ...prev, ...patch });
+        let state = createState();
+        let feedbackTimer = 0;
 
-        const parseJsonSafe = (raw) => {
+        // ─────────────────────────────────────────────────────────────────────
+        // DOM References
+        // ─────────────────────────────────────────────────────────────────────
+        const $ = (sel) => document.querySelector(sel);
+        const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+
+        // ─────────────────────────────────────────────────────────────────────
+        // Data Extraction Helpers
+        // ─────────────────────────────────────────────────────────────────────
+        const parseJson = (str) => {
           try {
-            return raw ? JSON.parse(raw) : null;
+            return str ? JSON.parse(str) : null;
           } catch {
             return null;
           }
         };
 
         const getCompiledPrompts = (payload) => {
-          const meta = payload && payload.meta ? payload.meta : null;
-          const signature = meta && meta.signature
-            ? meta.signature
-            : null;
-          const compiled = meta && meta.compiled ? meta.compiled : null;
-          const source = signature || compiled;
-          if (!source) return { system: "", user: "" };
+          const meta = payload?.meta;
+          const source = meta?.signature || meta?.compiled;
           return {
-            system: typeof source.system === "string"
-              ? source.system
-              : "",
-            user: typeof source.user === "string" ? source.user : "",
+            system: source?.system || "",
+            user: source?.user || "",
           };
         };
 
-        const deriveSignatureText = (payload) => {
-          // DSPy Signature = IR structure (role, objective, constraints, etc.)
-          const ir = payload && payload.meta && payload.meta.ir
-            ? payload.meta.ir
-            : null;
-          if (!ir) return "";
+        const extractEnhancedPrompt = (payload) => {
+          const { user } = getCompiledPrompts(payload);
+          const match = user.match(/TASK:\n([\s\S]*?)\n\nOUTPUT:/);
+          if (match?.[1]) return match[1];
+          return (
+            payload?.meta?.enhancement?.enhancedPrompt ||
+            payload?.meta?.prompt ||
+            ""
+          );
+        };
 
+        const extractSignature = (payload) => {
+          const ir = payload?.meta?.ir;
+          if (!ir) return "";
           const lines = [];
           if (ir.role) lines.push(`ROLE: ${ir.role}`);
           if (ir.objective) lines.push(`OBJECTIVE: ${ir.objective}`);
-          if (ir.constraints && ir.constraints.length) {
+          if (ir.constraints?.length)
             lines.push(
-              `CONSTRAINTS:\n${
-                ir.constraints.map((c) => `  • ${c}`).join("\n")
-              }`,
+              `CONSTRAINTS:\n${ir.constraints.map((c) => `  • ${c}`).join("\n")}`,
             );
-          }
-          if (ir.style && ir.style.length) {
+          if (ir.style?.length)
+            lines.push(`STYLE:\n${ir.style.map((s) => `  • ${s}`).join("\n")}`);
+          if (ir.steps?.length)
             lines.push(
-              `STYLE:\n${ir.style.map((s) => `  • ${s}`).join("\n")}`,
+              `STEPS:\n${ir.steps.map((s, i) => `  ${i + 1}. ${s}`).join("\n")}`,
             );
-          }
-          if (ir.steps && ir.steps.length) {
-            lines.push(
-              `STEPS:\n${
-                ir.steps.map((s, i) => `  ${i + 1}. ${s}`).join("\n")
-              }`,
-            );
-          }
-          if (ir.examples && ir.examples.length) {
-            lines.push(
-              `EXAMPLES: ${ir.examples.length} few-shot example(s)`,
-            );
-          }
-          if (ir.outputSchema) {
-            lines.push(
-              `OUTPUT SCHEMA: ${JSON.stringify(ir.outputSchema)}`,
-            );
-          }
+          if (ir.examples?.length)
+            lines.push(`EXAMPLES: ${ir.examples.length} few-shot example(s)`);
+          if (ir.outputSchema)
+            lines.push(`OUTPUT SCHEMA: ${JSON.stringify(ir.outputSchema)}`);
           return lines.join("\n\n");
         };
 
-        const deriveEnhancedPromptText = (payload) => {
-          // Enhanced Prompt = the transformed user prompt that will be sent to the model.
-          // Prefer extracting the exact prompt used from the compiled user prompt (TASK section),
-          // since meta.prompt / meta.enhancement may be display-formatted in demo mode.
-          const { user: compiledUser } = getCompiledPrompts(payload);
-          if (compiledUser) {
-            const taskMatch = compiledUser.match(
-              /TASK:\n([\s\S]*?)\n\nOUTPUT:/,
+        const extractModelOutput = (payload) => payload?.output?.answer || "";
+
+        const extractError = (payload, status) => {
+          if (payload?.detail?.trim()) return payload.detail.trim();
+          if (payload?.error?.trim()) return payload.error.trim();
+          return status >= 500
+            ? "Service unavailable. Please try again."
+            : "Could not enhance prompt. Check your input.";
+        };
+
+        // ─────────────────────────────────────────────────────────────────────
+        // Render Functions
+        // ─────────────────────────────────────────────────────────────────────
+        const render = () => {
+          const submitBtn = $("#submit-btn");
+          const statusEl = $("#status-indicator");
+          const errorEl = $("#error-banner");
+          const pipelineArrow = $(".pipeline-arrow");
+          const feedbackEl = $(".copy-feedback");
+
+          // Submit button state
+          if (submitBtn) {
+            submitBtn.disabled = state.isLoading;
+            submitBtn.setAttribute(
+              "data-loading",
+              state.isLoading ? "true" : "false",
             );
-            if (taskMatch && typeof taskMatch[1] === "string") {
-              return taskMatch[1];
-            }
           }
 
-          const enhanced =
-            payload && payload.meta && payload.meta.enhancement &&
-              typeof payload.meta.enhancement.enhancedPrompt ===
-                "string"
-              ? payload.meta.enhancement.enhancedPrompt
-              : null;
-          if (enhanced && enhanced.length) return enhanced;
-
-          const prompt = payload && payload.meta &&
-              typeof payload.meta.prompt === "string"
-            ? payload.meta.prompt
-            : "";
-          return prompt;
-        };
-
-        const deriveFinalSystemText = (payload) => {
-          return getCompiledPrompts(payload).system;
-        };
-
-        const deriveFinalUserText = (payload) => {
-          return getCompiledPrompts(payload).user;
-        };
-
-        const deriveModelOutputText = (payload) => {
-          if (
-            payload &&
-            payload.output &&
-            typeof payload.output.answer === "string"
-          ) {
-            return payload.output.answer;
+          // Status indicator
+          if (statusEl) {
+            statusEl.hidden = !state.isLoading;
+            statusEl.textContent = state.isLoading ? "Enhancing…" : "";
           }
-          return "";
-        };
 
-        const deriveErrorMessage = (payload, status) => {
-          if (payload) {
-            if (
-              typeof payload.detail === "string" &&
-              payload.detail.trim().length
-            ) {
-              return payload.detail.trim();
-            }
-            if (
-              typeof payload.error === "string" &&
-              payload.error.trim().length
-            ) {
-              return payload.error.trim();
-            }
-            if (
-              payload.output &&
-              payload.output.answer &&
-              typeof payload.output.answer === "string"
-            ) {
-              return payload.output.answer.trim();
-            }
+          // Pipeline arrow
+          if (pipelineArrow) {
+            pipelineArrow.setAttribute(
+              "data-active",
+              state.isLoading ? "true" : "false",
+            );
           }
-          return status && status >= 500
-            ? "The enhancer is unavailable. Please try again shortly."
-            : "We could not enhance that prompt. Double-check the text and try once more.";
-        };
 
-        const init = () => {
-          const elements = Object.freeze({
-            form: document.getElementById(enhanceFormId),
-            signatureOutput: document.getElementById(signatureOutputId),
-            promptOutput: document.getElementById(promptOutputId),
-            finalSystemOutput: document.getElementById(
-              finalSystemOutputId,
-            ),
-            finalUserOutput: document.getElementById(finalUserOutputId),
-            modelOutput: document.getElementById(modelOutputId),
-            status: document.getElementById(statusId),
-            error: document.getElementById(errorId),
-            submit: document.querySelector(
-              `#${enhanceFormId} button[type="submit"]`,
-            ),
-            feedback: document.getElementById(copyFeedbackId),
-            contextSelect: document.getElementById(contextSelectId),
-            contextHint: document.getElementById(contextHintId),
-            copyButtons: Array.from(
-              document.querySelectorAll("button.copy[data-copy-target]"),
-            ),
-            copyAll: document.getElementById(copyAllId),
-            downloadJson: document.getElementById(downloadJsonId),
+          // Error display
+          if (errorEl) {
+            errorEl.hidden = !state.error;
+            errorEl.textContent = state.error || "";
+          }
+
+          // Tab buttons - show content indicator
+          $$(".tab-btn").forEach((btn) => {
+            const tabId = btn.dataset.tab;
+            const hasContent = !!(state.outputs[tabId] || "").trim();
+            btn.setAttribute("data-has-content", hasContent ? "true" : "false");
+            btn.setAttribute(
+              "aria-selected",
+              state.activeTab === tabId ? "true" : "false",
+            );
           });
 
-          if (
-            !elements.form || !elements.submit ||
-            !elements.signatureOutput ||
-            !elements.promptOutput
-          ) {
-            console.warn(
-              "OPE UI: missing required elements. UI will not function.",
+          // Tab panels
+          $$(".tab-panel").forEach((panel) => {
+            const isActive = panel.dataset.tab === state.activeTab;
+            panel.setAttribute("data-active", isActive ? "true" : "false");
+          });
+
+          // Output textareas
+          Object.entries(state.outputs).forEach(([key, value]) => {
+            const textarea = $(`#output-${key}`);
+            if (textarea) textarea.value = value;
+          });
+
+          // Copy buttons
+          $$(".btn-copy").forEach((btn) => {
+            const targetId = btn.dataset.copyTarget;
+            const value = state.outputs[targetId] || "";
+            btn.disabled = state.isLoading || !value.trim();
+          });
+
+          // Copy all / download buttons
+          const hasAnyOutput = Object.values(state.outputs).some((v) =>
+            v.trim(),
+          );
+          const copyAllBtn = $("#copy-all-btn");
+          const downloadBtn = $("#download-btn");
+          if (copyAllBtn) copyAllBtn.disabled = state.isLoading || !hasAnyOutput;
+          if (downloadBtn)
+            downloadBtn.disabled = state.isLoading || !state.lastPayload;
+
+          // Copy feedback
+          if (feedbackEl) {
+            feedbackEl.setAttribute(
+              "data-visible",
+              state.copyFeedback ? "true" : "false",
             );
-            return;
+            feedbackEl.textContent = state.copyFeedback;
           }
 
-          let state = createState();
-          let clearCopyFeedbackTimer = 0;
+          // Settings dropdown
+          const settingsBtn = $("#settings-btn");
+          const settingsDropdown = $("#settings-dropdown");
+          if (settingsBtn) {
+            settingsBtn.setAttribute(
+              "aria-expanded",
+              state.settingsOpen ? "true" : "false",
+            );
+          }
+          if (settingsDropdown) {
+            settingsDropdown.hidden = !state.settingsOpen;
+          }
+        };
 
-          const render = (currentState) => {
-            const {
-              isLoading,
-              signatureText,
-              enhancedPromptText,
-              finalSystemText,
-              finalUserText,
-              modelOutputText,
-              error,
-              copyFeedback,
-              lastPayload,
-            } = currentState;
+        const updateState = (patch) => {
+          state = createState({ ...state, ...patch });
+          render();
+        };
 
-            if (elements.submit) {
-              elements.submit.disabled = isLoading;
-              if (isLoading) {
-                elements.submit.setAttribute("data-loading", "true");
-              } else {
-                elements.submit.removeAttribute("data-loading");
-              }
-            }
+        // ─────────────────────────────────────────────────────────────────────
+        // Clipboard & Feedback
+        // ─────────────────────────────────────────────────────────────────────
+        const copyToClipboard = async (text) => {
+          try {
+            await navigator.clipboard.writeText(text);
+            return true;
+          } catch {
+            return false;
+          }
+        };
 
-            if (elements.status) {
-              elements.status.textContent = isLoading
-                ? "Enhancing…"
-                : "";
-              elements.status.hidden = !isLoading;
-            }
+        const showFeedback = (msg) => {
+          clearTimeout(feedbackTimer);
+          updateState({ copyFeedback: msg });
+          feedbackTimer = setTimeout(() => updateState({ copyFeedback: "" }), 2000);
+        };
 
-            if (elements.error) {
-              if (error) {
-                elements.error.textContent = error;
-                elements.error.hidden = false;
-              } else {
-                elements.error.textContent = "";
-                elements.error.hidden = true;
-              }
-            }
+        // ─────────────────────────────────────────────────────────────────────
+        // Event Handlers
+        // ─────────────────────────────────────────────────────────────────────
+        const handleTabClick = (e) => {
+          const btn = e.target.closest(".tab-btn");
+          if (!btn) return;
+          updateState({ activeTab: btn.dataset.tab });
+        };
 
-            if (elements.signatureOutput) {
-              elements.signatureOutput.value = signatureText;
-            }
-            if (elements.promptOutput) {
-              elements.promptOutput.value = enhancedPromptText;
-            }
-            if (elements.finalSystemOutput) {
-              elements.finalSystemOutput.value = finalSystemText;
-            }
-            if (elements.finalUserOutput) {
-              elements.finalUserOutput.value = finalUserText;
-            }
-            if (elements.modelOutput) {
-              elements.modelOutput.value = modelOutputText;
-            }
+        const handleCopyClick = async (e) => {
+          const btn = e.target.closest(".btn-copy");
+          if (!btn) return;
+          const targetId = btn.dataset.copyTarget;
+          const text = state.outputs[targetId] || "";
+          const ok = await copyToClipboard(text);
+          showFeedback(ok ? "Copied!" : "Copy failed");
+        };
 
-            for (const btn of elements.copyButtons) {
-              const targetId = btn.getAttribute("data-copy-target") || "";
-              const targetEl = targetId
-                ? document.getElementById(targetId)
-                : null;
-              const value = targetEl && "value" in targetEl &&
-                  typeof targetEl.value === "string"
-                ? targetEl.value
-                : "";
-              btn.disabled = isLoading || !value.trim().length;
-            }
+        const handleCopyAll = async () => {
+          const payload = JSON.stringify(state.outputs, null, 2);
+          const ok = await copyToClipboard(payload);
+          showFeedback(ok ? "All outputs copied!" : "Copy failed");
+        };
 
-            if (elements.copyAll) {
-              const hasAnyOutput = [
-                signatureText,
-                enhancedPromptText,
-                finalSystemText,
-                finalUserText,
-                modelOutputText,
-              ].some((t) => typeof t === "string" && t.trim().length);
-              elements.copyAll.disabled = isLoading || !hasAnyOutput;
-            }
+        const handleDownload = () => {
+          if (!state.lastPayload) return;
+          const blob = new Blob([JSON.stringify(state.lastPayload, null, 2)], {
+            type: "application/json",
+          });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "ope-response.json";
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        };
 
-            if (elements.downloadJson) {
-              elements.downloadJson.disabled = isLoading || !lastPayload;
-            }
+        const handleSettingsToggle = (e) => {
+          e.stopPropagation();
+          updateState({ settingsOpen: !state.settingsOpen });
+        };
 
-            if (elements.feedback) {
-              elements.feedback.textContent = copyFeedback;
-            }
-          };
+        const handleClickOutside = (e) => {
+          if (!state.settingsOpen) return;
+          const wrapper = $(".settings-wrapper");
+          if (wrapper && !wrapper.contains(e.target)) {
+            updateState({ settingsOpen: false });
+          }
+        };
 
-          const replaceState = (next) => {
-            state = createState(next);
-            render(state);
-            return state;
-          };
+        const handleEscKey = (e) => {
+          if (e.key === "Escape" && state.settingsOpen) {
+            updateState({ settingsOpen: false });
+          }
+        };
 
-          const updateState = (transform) =>
-            replaceState(transform(state));
+        // ─────────────────────────────────────────────────────────────────────
+        // HTMX Event Handlers
+        // ─────────────────────────────────────────────────────────────────────
+        const setupHtmxHandlers = () => {
+          const form = $("#enhance-form");
+          if (!form) return;
 
-          const resetCopyFeedbackLater = () => {
-            if (clearCopyFeedbackTimer) {
-              window.clearTimeout(clearCopyFeedbackTimer);
-            }
-            clearCopyFeedbackTimer = window.setTimeout(() => {
-              updateState((prev) =>
-                mergeState(prev, { copyFeedback: "" })
-              );
-            }, 2000);
-          };
+          document.body.addEventListener("htmx:beforeRequest", (e) => {
+            if (e.target !== form) return;
+            updateState({ isLoading: true, error: null, copyFeedback: "" });
+          });
 
-          const isEnhanceForm = (target) => target === elements.form;
+          document.body.addEventListener("htmx:afterRequest", (e) => {
+            if (e.target !== form) return;
+            const { xhr, successful } = e.detail;
+            const payload = parseJson(xhr.responseText);
 
-          render(state);
-
-          const populateContexts = async () => {
-            if (!elements.contextSelect) return;
-            try {
-              const res = await fetch("/v1/contexts", {
-                headers: { accept: "application/json" },
+            if (successful) {
+              const { system, user } = getCompiledPrompts(payload);
+              updateState({
+                isLoading: false,
+                outputs: {
+                  enhanced: extractEnhancedPrompt(payload),
+                  model: extractModelOutput(payload),
+                  signature: extractSignature(payload),
+                  system,
+                  user,
+                },
+                lastPayload: payload,
+                error: null,
               });
-              if (!res.ok) throw new Error(`HTTP ${res.status}`);
-              const payload = await res.json();
-              const contexts =
-                payload && Array.isArray(payload.contexts)
-                  ? payload.contexts
-                  : [];
-              const options = contexts
-                .filter((c) =>
-                  c && typeof c.id === "string" &&
-                  typeof c.name === "string"
-                )
-                .map((c) => ({
-                  id: c.id,
-                  name: c.name,
-                  description: typeof c.description === "string"
-                    ? c.description
-                    : "",
-                }))
-                .sort((a, b) => a.name.localeCompare(b.name));
+              return;
+            }
 
-              for (const ctx of options) {
+            updateState({
+              isLoading: false,
+              error: extractError(payload, xhr.status),
+            });
+          });
+
+          document.body.addEventListener("htmx:sendError", (e) => {
+            if (e.target !== form) return;
+            updateState({
+              isLoading: false,
+              error: "Network error. Check your connection.",
+            });
+          });
+        };
+
+        // ─────────────────────────────────────────────────────────────────────
+        // Context Loading
+        // ─────────────────────────────────────────────────────────────────────
+        const loadContexts = async () => {
+          const select = $("#context-select");
+          if (!select) return;
+
+          try {
+            const res = await fetch("/v1/contexts", {
+              headers: { accept: "application/json" },
+            });
+            if (!res.ok) return;
+            const data = await res.json();
+            const contexts = data?.contexts || [];
+
+            contexts
+              .filter((c) => c?.id && c?.name)
+              .sort((a, b) => a.name.localeCompare(b.name))
+              .forEach((ctx) => {
                 const opt = document.createElement("option");
                 opt.value = ctx.id;
                 opt.textContent = ctx.id;
                 opt.title = ctx.description
                   ? `${ctx.name} — ${ctx.description}`
                   : ctx.name;
-                elements.contextSelect.appendChild(opt);
-              }
+                select.appendChild(opt);
+              });
+          } catch {
+            // Silently fail - contexts are optional
+          }
+        };
 
-              if (elements.contextHint) {
-                elements.contextHint.hidden = false;
-                elements.contextHint.textContent = options.length
-                  ? `Loaded ${options.length} context(s). Hover to preview.`
-                  : "No contexts found.";
-              }
-            } catch (_err) {
-              if (elements.contextHint) {
-                elements.contextHint.hidden = false;
-                elements.contextHint.textContent =
-                  "Contexts unavailable (server did not respond).";
+        // ─────────────────────────────────────────────────────────────────────
+        // Keyboard Shortcuts
+        // ─────────────────────────────────────────────────────────────────────
+        const setupKeyboardShortcuts = () => {
+          document.addEventListener("keydown", (e) => {
+            // Cmd/Ctrl + Enter to submit
+            if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+              const form = $("#enhance-form");
+              if (form && !state.isLoading) {
+                e.preventDefault();
+                form.requestSubmit();
               }
             }
-          };
 
-          populateContexts();
-
-          const copyToClipboard = async (text) => {
-            if (!text || !text.trim().length) return false;
-            try {
-              await navigator.clipboard.writeText(text);
-              return true;
-            } catch (_err) {
-              try {
-                const textarea = document.createElement("textarea");
-                textarea.value = text;
-                textarea.setAttribute("readonly", "true");
-                textarea.style.position = "fixed";
-                textarea.style.left = "-9999px";
-                document.body.appendChild(textarea);
-                textarea.select();
-                const ok = document.execCommand("copy");
-                document.body.removeChild(textarea);
-                return ok;
-              } catch (_err2) {
-                return false;
+            // Number keys 1-5 to switch tabs (when not in input)
+            if (
+              !e.metaKey &&
+              !e.ctrlKey &&
+              !e.altKey &&
+              document.activeElement?.tagName !== "TEXTAREA" &&
+              document.activeElement?.tagName !== "INPUT"
+            ) {
+              const tabs = ["enhanced", "model", "signature", "system", "user"];
+              const num = parseInt(e.key);
+              if (num >= 1 && num <= 5) {
+                e.preventDefault();
+                updateState({ activeTab: tabs[num - 1] });
               }
             }
-          };
-
-          const setCopyFeedback = (message) => {
-            updateState((prev) =>
-              mergeState(prev, { copyFeedback: message })
-            );
-            resetCopyFeedbackLater();
-          };
-
-          for (const btn of elements.copyButtons) {
-            btn.addEventListener("click", async () => {
-              const targetId = btn.getAttribute("data-copy-target") || "";
-              const targetEl = targetId
-                ? document.getElementById(targetId)
-                : null;
-              const text = targetEl && "value" in targetEl &&
-                  typeof targetEl.value === "string"
-                ? targetEl.value
-                : "";
-              const ok = await copyToClipboard(text);
-              setCopyFeedback(ok ? "Copied." : "Copy failed.");
-            });
-          }
-
-          if (elements.copyAll) {
-            elements.copyAll.addEventListener("click", async () => {
-              const payload = {
-                signature: state.signatureText ?? "",
-                enhancedPrompt: state.enhancedPromptText ?? "",
-                finalSystem: state.finalSystemText ?? "",
-                finalUser: state.finalUserText ?? "",
-                modelOutput: state.modelOutputText ?? "",
-              };
-              const ok = await copyToClipboard(
-                JSON.stringify(payload, null, 2),
-              );
-              setCopyFeedback(
-                ok ? "Copied all outputs as JSON." : "Copy failed.",
-              );
-            });
-          }
-
-          if (elements.downloadJson) {
-            elements.downloadJson.addEventListener("click", () => {
-              if (!state.lastPayload) return;
-              const blob = new Blob(
-                [JSON.stringify(state.lastPayload, null, 2)],
-                { type: "application/json" },
-              );
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement("a");
-              a.href = url;
-              a.download = "ope-response.json";
-              document.body.appendChild(a);
-              a.click();
-              document.body.removeChild(a);
-              URL.revokeObjectURL(url);
-            });
-          }
-
-          document.body.addEventListener(
-            "htmx:beforeRequest",
-            (event) => {
-              if (!isEnhanceForm(event.target)) return;
-              updateState((prev) =>
-                mergeState(prev, {
-                  isLoading: true,
-                  error: null,
-                  copyFeedback: "",
-                })
-              );
-            },
-          );
-
-          document.body.addEventListener(
-            "htmx:afterRequest",
-            (event) => {
-              if (!isEnhanceForm(event.target)) return;
-              const { xhr, successful } = event.detail;
-              const payload = parseJsonSafe(xhr.responseText);
-
-              if (successful) {
-                const signatureText = deriveSignatureText(payload);
-                const enhancedPromptText = deriveEnhancedPromptText(
-                  payload,
-                );
-                const finalSystemText = deriveFinalSystemText(payload);
-                const finalUserText = deriveFinalUserText(payload);
-                const modelOutputText = deriveModelOutputText(payload);
-                updateState((prev) =>
-                  mergeState(prev, {
-                    isLoading: false,
-                    signatureText,
-                    enhancedPromptText,
-                    finalSystemText,
-                    finalUserText,
-                    modelOutputText,
-                    error: null,
-                    lastPayload: payload,
-                  })
-                );
-                return;
-              }
-
-              updateState((prev) =>
-                mergeState(prev, {
-                  isLoading: false,
-                  error: deriveErrorMessage(payload, xhr.status),
-                })
-              );
-            },
-          );
-
-          document.body.addEventListener("htmx:sendError", (event) => {
-            if (!isEnhanceForm(event.target)) return;
-            updateState((prev) =>
-              mergeState(prev, {
-                isLoading: false,
-                error:
-                  "Network error: please check your connection and retry.",
-              })
-            );
           });
+        };
 
-          document.body.addEventListener(
-            "htmx:responseError",
-            (event) => {
-              if (!isEnhanceForm(event.target)) return;
-              const payload = parseJsonSafe(
-                event.detail.xhr.responseText,
-              );
-              updateState((prev) =>
-                mergeState(prev, {
-                  isLoading: false,
-                  error: deriveErrorMessage(
-                    payload,
-                    event.detail.xhr.status,
-                  ),
-                })
-              );
-            },
-          );
+        // ─────────────────────────────────────────────────────────────────────
+        // Initialization
+        // ─────────────────────────────────────────────────────────────────────
+        const init = () => {
+          render();
+          setupHtmxHandlers();
+          loadContexts();
+          setupKeyboardShortcuts();
+
+          // Tab navigation
+          $(".tab-nav")?.addEventListener("click", handleTabClick);
+
+          // Copy buttons
+          document.addEventListener("click", handleCopyClick);
+
+          // Copy all
+          $("#copy-all-btn")?.addEventListener("click", handleCopyAll);
+
+          // Download
+          $("#download-btn")?.addEventListener("click", handleDownload);
+
+          // Settings dropdown
+          $("#settings-btn")?.addEventListener("click", handleSettingsToggle);
+          document.addEventListener("click", handleClickOutside);
+          document.addEventListener("keydown", handleEscKey);
         };
 
         if (document.readyState === "loading") {
-          document.addEventListener("DOMContentLoaded", init, {
-            once: true,
-          });
+          document.addEventListener("DOMContentLoaded", init, { once: true });
         } else {
           init();
         }
@@ -1197,232 +1324,429 @@
     </script>
   </head>
   <body>
-    <main>
-      <header>
-        <div class="brand">
-          <h1>Online Prompt Enhancer</h1>
-          <p>
-            Turn vague prompts into structured, model-ready tasks — and inspect
-            every stage of the pipeline.
-          </p>
+    <div class="app">
+      <!-- Header -->
+      <header class="app-header">
+        <div class="header-content">
+          <div class="brand">
+            <div class="brand-logo">OPE</div>
+            <span class="brand-name">Online Prompt Enhancer</span>
+            <span class="brand-tag">Transform prompts into structured tasks</span>
+          </div>
+          <div class="header-actions">
+            <button
+              type="button"
+              class="btn btn-ghost"
+              id="download-btn"
+              disabled
+              aria-label="Download JSON response"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+              <span>JSON</span>
+            </button>
+            <div class="settings-wrapper">
+              <button
+                type="button"
+                class="settings-btn"
+                id="settings-btn"
+                aria-expanded="false"
+                aria-controls="settings-dropdown"
+                aria-label="Settings"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="3" />
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                </svg>
+              </button>
+              <div class="settings-dropdown" id="settings-dropdown" hidden>
+                <div class="settings-title">Settings</div>
+                <div class="settings-grid">
+                  <div class="field">
+                    <label class="field-label" for="task-type">Task Type</label>
+                    <select class="field-select" id="task-type" name="taskType" form="enhance-form">
+                      <option value="">auto</option>
+                      <option value="qa">qa</option>
+                      <option value="extract">extract</option>
+                      <option value="summarize">summarize</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label class="field-label" for="target-hint">Target</label>
+                    <select class="field-select" id="target-hint" name="targetHint" form="enhance-form">
+                      <option value="">auto</option>
+                      <option value="local">local</option>
+                      <option value="cloud">cloud</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label class="field-label" for="context-select">Context</label>
+                    <select class="field-select" id="context-select" name="context" form="enhance-form">
+                      <option value="">auto</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label class="field-label" for="enhance-mode">Enhance</label>
+                    <select class="field-select" id="enhance-mode" name="enhance" form="enhance-form">
+                      <option value="rules" selected>rules</option>
+                      <option value="none">none</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </header>
 
-      <div class="workspace">
-      <section class="panel" id="input-panel" aria-labelledby="original-label">
-        <div class="panel-head">
-          <label id="original-label" for="raw-prompt">Original Prompt</label>
-        </div>
-        <form
-          id="enhance-form"
-          hx-post="/v1/generate"
-          hx-trigger="submit"
-          hx-swap="none"
-          hx-ext="json-enc"
-        >
-          <textarea
-            id="raw-prompt"
-            class="prompt-input"
-            name="rawPrompt"
-            required
-            placeholder="Paste a prompt. Keep it raw — the enhancer will add structure, constraints, and examples where helpful."
-            autocomplete="off"
-            spellcheck="true"
-          ></textarea>
-          <div class="field-grid" aria-label="Advanced options">
-            <div>
-              <label for="task-type">taskType</label>
-              <select id="task-type" name="taskType">
-                <option value="">auto</option>
-                <option value="qa">qa</option>
-                <option value="extract">extract</option>
-                <option value="summarize">summarize</option>
-              </select>
+      <!-- Main Content -->
+      <main class="app-main">
+        <div class="workspace">
+          <!-- Input Panel -->
+          <section class="input-panel">
+            <div class="card input-card">
+              <div class="card-header">
+                <h2 class="card-title">Input Prompt</h2>
+              </div>
+              <div class="card-body">
+                <form
+                  id="enhance-form"
+                  hx-post="/v1/generate"
+                  hx-trigger="submit"
+                  hx-swap="none"
+                  hx-ext="json-enc"
+                >
+                  <div class="prompt-area">
+                    <textarea
+                      id="raw-prompt"
+                      class="prompt-input"
+                      name="rawPrompt"
+                      required
+                      placeholder="Enter your prompt here. Keep it raw — OPE will add structure, constraints, and examples."
+                      autocomplete="off"
+                      spellcheck="true"
+                    ></textarea>
+                  </div>
+
+                  <div class="submit-area">
+                    <button type="submit" class="btn btn-primary" id="submit-btn">
+                      <span class="btn-text">Enhance</span>
+                      <span class="shortcut-hint">
+                        <span class="kbd">⌘</span>
+                        <span class="kbd">↵</span>
+                      </span>
+                    </button>
+                    <span
+                      class="status-indicator"
+                      id="status-indicator"
+                      role="status"
+                      aria-live="polite"
+                      hidden
+                    ></span>
+                  </div>
+                </form>
+
+                <div class="error-banner" id="error-banner" role="alert" hidden></div>
+              </div>
             </div>
-            <div>
-              <label for="target-hint">targetHint</label>
-              <select id="target-hint" name="targetHint">
-                <option value="">auto</option>
-                <option value="local">local</option>
-                <option value="cloud">cloud</option>
-              </select>
-            </div>
-            <div>
-              <label for="context-select">context</label>
-              <select id="context-select" name="context">
-                <option value="">auto (detect)</option>
-              </select>
-              <div class="hint" id="context-hint" hidden></div>
-            </div>
-            <div>
-              <label for="enhance-mode">enhance</label>
-              <select id="enhance-mode" name="enhance">
-                <option value="rules" selected>rules</option>
-                <option value="none">none</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-actions">
-            <button type="submit">Enhance Prompt</button>
-            <span
-              class="status"
-              id="status-text"
-              hidden
-              role="status"
-              aria-live="polite"
+          </section>
+
+          <!-- Pipeline Arrow (Desktop) -->
+          <div class="pipeline-indicator">
+            <svg
+              class="pipeline-arrow"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
             >
-              Enhancing…
-            </span>
+              <line x1="5" y1="12" x2="19" y2="12" />
+              <polyline points="12 5 19 12 12 19" />
+            </svg>
           </div>
-        </form>
-        <div class="error" id="error-message" role="alert" hidden></div>
-      </section>
 
-      <section class="panel" id="output-panel" aria-labelledby="enhanced-label">
-        <div class="panel-head">
-          <label id="enhanced-label">Outputs</label>
-          <div class="panel-actions">
-            <button
-              type="button"
-              class="ghost"
-              id="download-json"
-              disabled
-              aria-label="Download full JSON response"
-            >
-              Download JSON
-            </button>
-            <button
-              type="button"
-              class="ghost"
-              id="copy-all"
-              disabled
-              aria-label="Copy all outputs as JSON"
-            >
-              Copy All
-            </button>
-          </div>
+          <!-- Output Panel -->
+          <section class="output-panel">
+            <div class="card output-card">
+              <!-- Tab Navigation -->
+              <nav class="tab-nav" role="tablist">
+                <button
+                  class="tab-btn"
+                  role="tab"
+                  data-tab="enhanced"
+                  aria-selected="true"
+                  aria-controls="panel-enhanced"
+                >
+                  <span class="tab-dot"></span>
+                  Enhanced
+                </button>
+                <button
+                  class="tab-btn"
+                  role="tab"
+                  data-tab="model"
+                  aria-selected="false"
+                  aria-controls="panel-model"
+                >
+                  <span class="tab-dot"></span>
+                  Model Output
+                </button>
+                <button
+                  class="tab-btn"
+                  role="tab"
+                  data-tab="signature"
+                  aria-selected="false"
+                  aria-controls="panel-signature"
+                >
+                  <span class="tab-dot"></span>
+                  Signature
+                </button>
+                <button
+                  class="tab-btn"
+                  role="tab"
+                  data-tab="system"
+                  aria-selected="false"
+                  aria-controls="panel-system"
+                >
+                  <span class="tab-dot"></span>
+                  System
+                </button>
+                <button
+                  class="tab-btn"
+                  role="tab"
+                  data-tab="user"
+                  aria-selected="false"
+                  aria-controls="panel-user"
+                >
+                  <span class="tab-dot"></span>
+                  User
+                </button>
+              </nav>
+
+              <!-- Tab Content -->
+              <div class="tab-content">
+                <!-- Enhanced Prompt Tab -->
+                <div
+                  class="tab-panel"
+                  id="panel-enhanced"
+                  data-tab="enhanced"
+                  data-active="true"
+                  role="tabpanel"
+                >
+                  <div class="output-header">
+                    <div class="output-meta">
+                      <div class="output-title">Enhanced Prompt</div>
+                      <div class="output-desc">The task sent to the model</div>
+                    </div>
+                    <div class="output-actions">
+                      <button
+                        type="button"
+                        class="btn-icon btn-copy"
+                        data-copy-target="enhanced"
+                        aria-label="Copy enhanced prompt"
+                        disabled
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="output-body">
+                    <textarea
+                      id="output-enhanced"
+                      class="output-textarea"
+                      readonly
+                      placeholder="Enhanced prompt will appear here…"
+                    ></textarea>
+                  </div>
+                </div>
+
+                <!-- Model Output Tab -->
+                <div
+                  class="tab-panel"
+                  id="panel-model"
+                  data-tab="model"
+                  data-active="false"
+                  role="tabpanel"
+                >
+                  <div class="output-header">
+                    <div class="output-meta">
+                      <div class="output-title">Model Output</div>
+                      <div class="output-desc">Generated response (output.answer)</div>
+                    </div>
+                    <div class="output-actions">
+                      <button
+                        type="button"
+                        class="btn-icon btn-copy"
+                        data-copy-target="model"
+                        aria-label="Copy model output"
+                        disabled
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="output-body">
+                    <textarea
+                      id="output-model"
+                      class="output-textarea"
+                      readonly
+                      placeholder="Model's answer will appear here…"
+                    ></textarea>
+                  </div>
+                </div>
+
+                <!-- Signature Tab -->
+                <div
+                  class="tab-panel"
+                  id="panel-signature"
+                  data-tab="signature"
+                  data-active="false"
+                  role="tabpanel"
+                >
+                  <div class="output-header">
+                    <div class="output-meta">
+                      <div class="output-title">DSPy Signature</div>
+                      <div class="output-desc">IR: role, objective, constraints, steps</div>
+                    </div>
+                    <div class="output-actions">
+                      <button
+                        type="button"
+                        class="btn-icon btn-copy"
+                        data-copy-target="signature"
+                        aria-label="Copy signature"
+                        disabled
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="output-body">
+                    <textarea
+                      id="output-signature"
+                      class="output-textarea"
+                      readonly
+                      placeholder="Synthesized IR structure will appear here…"
+                    ></textarea>
+                  </div>
+                </div>
+
+                <!-- System Prompt Tab -->
+                <div
+                  class="tab-panel"
+                  id="panel-system"
+                  data-tab="system"
+                  data-active="false"
+                  role="tabpanel"
+                >
+                  <div class="output-header">
+                    <div class="output-meta">
+                      <div class="output-title">System Prompt</div>
+                      <div class="output-desc">Exact system message sent to model</div>
+                    </div>
+                    <div class="output-actions">
+                      <button
+                        type="button"
+                        class="btn-icon btn-copy"
+                        data-copy-target="system"
+                        aria-label="Copy system prompt"
+                        disabled
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="output-body">
+                    <textarea
+                      id="output-system"
+                      class="output-textarea"
+                      readonly
+                      placeholder="System prompt will appear here…"
+                    ></textarea>
+                  </div>
+                </div>
+
+                <!-- User Prompt Tab -->
+                <div
+                  class="tab-panel"
+                  id="panel-user"
+                  data-tab="user"
+                  data-active="false"
+                  role="tabpanel"
+                >
+                  <div class="output-header">
+                    <div class="output-meta">
+                      <div class="output-title">User Prompt</div>
+                      <div class="output-desc">Exact user message sent to model</div>
+                    </div>
+                    <div class="output-actions">
+                      <button
+                        type="button"
+                        class="btn-icon btn-copy"
+                        data-copy-target="user"
+                        aria-label="Copy user prompt"
+                        disabled
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="output-body">
+                    <textarea
+                      id="output-user"
+                      class="output-textarea"
+                      readonly
+                      placeholder="User prompt will appear here…"
+                    ></textarea>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Footer -->
+              <div class="output-footer">
+                <span class="copy-feedback" aria-live="polite"></span>
+                <div class="footer-actions">
+                  <button
+                    type="button"
+                    class="btn btn-ghost"
+                    id="copy-all-btn"
+                    disabled
+                  >
+                    Copy All
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
         </div>
-
-        <div class="output-grid" aria-label="Pipeline outputs">
-          <div class="output-card" data-span="2">
-            <div class="output-card-head">
-              <div class="output-card-title">
-                <div class="title">Enhanced Prompt</div>
-                <div class="meta">What the model is asked to do (TASK)</div>
-              </div>
-              <button
-                type="button"
-                class="copy"
-                data-copy-target="enhanced-output"
-                aria-label="Copy enhanced prompt"
-                disabled
-              >
-                Copy
-              </button>
-            </div>
-            <textarea
-              id="enhanced-output"
-              readonly
-              placeholder="The enhanced prompt that will be sent to the model will appear here."
-            ></textarea>
-          </div>
-
-          <div class="output-card">
-            <div class="output-card-head">
-              <div class="output-card-title">
-                <div class="title">Model Output</div>
-                <div class="meta">The generated answer (output.answer)</div>
-              </div>
-              <button
-                type="button"
-                class="copy"
-                data-copy-target="model-output"
-                aria-label="Copy model output"
-                disabled
-              >
-                Copy
-              </button>
-            </div>
-            <textarea
-              id="model-output"
-              readonly
-              placeholder="The model's generated answer will appear here."
-            ></textarea>
-          </div>
-
-          <div class="output-card">
-            <div class="output-card-head">
-              <div class="output-card-title">
-                <div class="title">DSPy Signature</div>
-                <div class="meta">IR: role, objective, constraints, steps</div>
-              </div>
-              <button
-                type="button"
-                class="copy"
-                data-copy-target="signature-output"
-                aria-label="Copy DSPy signature"
-                disabled
-              >
-                Copy
-              </button>
-            </div>
-            <textarea
-              id="signature-output"
-              readonly
-              placeholder="The synthesized prompt IR (role, objective, constraints, etc.) will appear here."
-            ></textarea>
-          </div>
-
-          <div class="output-card">
-            <div class="output-card-head">
-              <div class="output-card-title">
-                <div class="title">Final System Prompt</div>
-                <div class="meta">Exact system message sent to the model</div>
-              </div>
-              <button
-                type="button"
-                class="copy"
-                data-copy-target="final-system-output"
-                aria-label="Copy final system prompt"
-                disabled
-              >
-                Copy
-              </button>
-            </div>
-            <textarea
-              id="final-system-output"
-              readonly
-              placeholder="The exact system prompt sent to the model will appear here."
-            ></textarea>
-          </div>
-
-          <div class="output-card">
-            <div class="output-card-head">
-              <div class="output-card-title">
-                <div class="title">Final User Prompt</div>
-                <div class="meta">Exact user message sent to the model</div>
-              </div>
-              <button
-                type="button"
-                class="copy"
-                data-copy-target="final-user-output"
-                aria-label="Copy final user prompt"
-                disabled
-              >
-                Copy
-              </button>
-            </div>
-            <textarea
-              id="final-user-output"
-              readonly
-              placeholder="The exact user prompt sent to the model will appear here."
-            ></textarea>
-          </div>
-        </div>
-
-        <div class="feedback" id="copy-feedback" aria-live="polite"></div>
-      </section>
-      </div>
-    </main>
+      </main>
+    </div>
   </body>
 </html>
